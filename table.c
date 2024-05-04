@@ -1,5 +1,5 @@
 #include "table.h"
-
+//initialise les tables d'indexations des coups
 Zobrist init_zobrist(void)
 {
     int i ,j;
@@ -17,7 +17,7 @@ Zobrist init_zobrist(void)
     }
     tmp->turn=rand();
 }
-
+//initialise la table de hachage
 HT initTable(void)
 {
     HT tmp = malloc(sizeof(HT));
@@ -30,21 +30,24 @@ HT initTable(void)
     }
     return tmp ;
 }
-
+//libere la mémoire de la table de hachage , a voir si il faut free les items
 void freeTable(HT table)
 {
     free(table);
 }
+//ajoute a la table le pointeur de itm
 void add(HT table ,Item itm)
 {
     table->itms[hash(itm)]=itm;
 }
 
-Item searchitem(Table,Item)
+//renvoi l'existence de l'item dans la structure de données
+int searchitem(Table,Item)
 {
     return (table->itms[hash(itm)] != NULL);
 }
 
+//renvoi le hash/index du plateu
 int hash(Item itm,Zobrist zkey)
 {
     int i , j ;
@@ -67,5 +70,5 @@ int hash(Item itm,Zobrist zkey)
             }
         }
     }
-    return hash ;
+    return hash%HT_SIZE ;
 }
