@@ -69,18 +69,3 @@ int hash(Item itm,Zobrist zkey)
     }
     return hash ;
 }
-
-
-/*calculate_hash(char board[ROWS][COLS], ZobristKeys *keys) {
-    unsigned long long hash = 0; // Initialize hash value to 0
-
-    // Iterate over each cell in the board
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            // XOR the Zobrist key for the character in the current cell with the current hash value
-            hash ^= keys->keys[board[i][j]][i][j];
-        }
-    }
-
-    return hash; // Return the final hash value
-}*/
