@@ -1,21 +1,23 @@
 #include "item.h"
+#include <stdlib.h>
+typedef struct Zobrist_
+{
+    int *** tab;
+    int turn ;
+} * Zobrist ;
 
-typedef struct hash_item {
-    char* key;
-    Item value;
-} * Hitem;
+typedef struct HT_
+{
+    Item * itms;
+    int count ;
+} * HT ;
 
-typedef struct hash_table {
-    int size;
-    int count;
-    Hitem * items;
-} * Table;
 
-Table createTable(void);
-Hitem createHitem(Item);
-void freeTable(Table);
-void freeHitem(Hitem);
-void addHitem(Table,Hitem);
-void delHitem(Table,Item);
-Item searchHitem(Table,char**);
-char hash(char**);
+Zobrist init_zobrist(void);
+
+Table initTable(void);
+void freeTable(HT);
+void freeZobrist(Zobrist);
+void add(HT,Item);
+Item searchitem(Table,Item);
+int hash(Item);
