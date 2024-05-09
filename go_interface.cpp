@@ -7,7 +7,7 @@
 #include <ctime>
 #define N 9
 #define RADIUS 50
-#define COLOR_PLAYER Black
+#define COLOR_PLAYER 1
 
 class GoBoard
 {
@@ -94,10 +94,10 @@ class PlayerStones
 	public:
 	PlayerStones(){
 		player_stone.setRadius(RADIUS);
-		player_stone.setFillColor(sf::Color::White);
+		if(COLOR_PLAYER==1) player_stone.setFillColor(sf::Color::White);
 	}
 	
-	void display(sf::RenderWindow &window,sf::Vector2i pos,sf::Vector2u f)
+	void display(sf::RenderWindow &window,sf::Vector2i pos,sf::Vector2u f,int ** board)
 	{	
 		
 		int a = 0.85*f.y/N;
@@ -108,7 +108,14 @@ class PlayerStones
 		if ((pos.x>corner_hg_x) && (pos.y>corner_hg_y) && (pos.x<corner_hg_x+a*(N)) && (pos.y<corner_hg_y+a*(N) )){
 
 			player_stone.setPosition(corner_hg_x+(X*a),corner_hg_y+(Y*a));
-			window.draw(player_stone);
+			if (COLOR_PLAYER==-1 && board[X][Y]==0){
+				board[X][Y]=-1;
+				window.draw(player_stone);
+			}
+			else if (COLOR_PLAYER==1 && board[X][Y]==0){
+				board[X][Y]=1;
+				window.draw(player_stone);
+			}
 		}
 
 	}
@@ -116,20 +123,18 @@ class PlayerStones
 
 };
 int** creerMatriceAleatoire() {
-    const int rows = 9;
-    const int cols = 9;
     
     // Allocation dynamique de la mémoire pour la matrice
-    int** matrix = new int*[rows];
-    for (int i = 0; i < rows; ++i) {
-        matrix[i] = new int[cols];
+    int** matrix = new int*[N];
+    for (int i = 0; i < N; ++i) {
+        matrix[i] = new int[N];
     }
 
     srand(time(nullptr)); // Initialisation de la graine pour la génération de nombres aléatoires
 
     // Remplissage de la matrice avec des valeurs aléatoires entre -1, 0 et 1
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
             int randomValue = rand() % 3; // Génère des valeurs entre 0 et 2
             matrix[i][j] = randomValue == 2 ? -1 : randomValue;
         }
@@ -138,16 +143,15 @@ int** creerMatriceAleatoire() {
     return matrix; // Retourne un pointeur vers la matrice
 }
 void afficherMatrice(int** matrix) {
-    const int rows = 9;
-    const int cols = 9;
 
     // Affichage de la matrice
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
-            std::cout << matrix[i][j] << " ";
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            std::cout << matrix[j][i] << " ";
         }
         std::cout << std::endl;
     }
+	std::cout<<std::endl;
 }
 
 int main()
@@ -184,7 +188,8 @@ int main()
 				sf::Vector2i pos = sf::Mouse::getPosition(window);
 				window.clear(sf::Color(200,173,127));
 				C.display(window);
-				P.display(window,pos,a);
+				P.display(window,pos,a,m);
+				afficherMatrice(m);
 			}
 		}
 		B.display(window);
