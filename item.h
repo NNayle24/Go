@@ -1,5 +1,16 @@
+#include <stdio.h>
+#include <stdlib.h>
 
-struct list_ ; 
+#ifndef ITEM_H
+#define ITEM_H
+
+#include "list.h"
+
+#define WH_BOARD 9
+
+
+
+// struct list_ ; 
 
 typedef struct item_
 {
@@ -9,7 +20,7 @@ typedef struct item_
     float f ;
     int depth ; 
     char ** board ;
-    
+    int turn ;
 } * Item ; 
 
 Item createItem();
@@ -20,4 +31,6 @@ void addBoard(Item,char**);
 void addHeuristic(Item,float);
 void addNext(Item,Item);
 void addPrev(Item,Item);
+void printBoard(Item);
 
+#endif // ITEM_H

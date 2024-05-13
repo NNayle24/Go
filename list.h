@@ -1,4 +1,8 @@
+#ifndef LIST_H
+#define LIST_H
 #include "item.h"
+ 
+// struct item_ ;
 
 typedef struct list_ 
 {
@@ -11,9 +15,12 @@ typedef struct list_
 List createList(void);
 void freeList(List);
 void eraseList(List);
-void addLast(List);
-void addFirst(List);
+void addLast(List, Item);
+void addFirst(List, Item);
 Item popLast(List);
 Item popFirst(List);
-Item popBest(List);
-short len(Item);
+// Item popBest(List);
+short len(List);
+void prinList(List) ;
+
+#endif // LIST_H
