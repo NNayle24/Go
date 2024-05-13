@@ -4,7 +4,7 @@
 
 #include "list.h"
 #include "item.h"
-#include "list.c"
+// #include "list.c"
 
 // Create an Item and allocate Board
 Item createItem(){
