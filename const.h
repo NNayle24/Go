@@ -1,0 +1,2 @@
+#define BOARD_SIZE 19
+#define HT_LENGHT 4096
