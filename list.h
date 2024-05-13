@@ -1,8 +1,9 @@
 #ifndef LIST_H
 #define LIST_H
+
 #include "item.h"
  
-// struct item_ ;
+
 
 typedef struct list_ 
 {

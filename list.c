@@ -1,9 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h> 
 
 #include "list.h"
-#include "item.h"
-
 // #include "item.c"
 
 List createList(){
@@ -145,9 +141,9 @@ void printList(List list) {
             // Impression de quelques propriétés de l'item
             printf("f: %.2f, depth: %d, turn: %d\n", current->f, current->depth, current->turn);
             /*
-            // Pour afficher le contenu du board, on suppose que WH_BOARD représente la taille du tableau
-            for (int i = 0; i < WH_BOARD; i++) {
-                for (int j = 0; j < WH_BOARD; j++) {
+            // Pour afficher le contenu du board, on suppose que BOARD_SIZE représente la taille du tableau
+            for (int i = 0; i < BOARD_SIZE; i++) {
+                for (int j = 0; j < BOARD_SIZE; j++) {
                     printf("%d ", current->board[i][j]);
                 }
                 printf("\n");

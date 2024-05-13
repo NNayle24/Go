@@ -1,17 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h> 
-#include <assert.h>
-
-#include "list.h"
 #include "item.h"
-// #include "list.c"
+#include "list.c"
 
-// Create an Item and allocate Board
+// Créé un item, aloue le tableau et la liste enfant
 Item createItem(){
     Item node = malloc(sizeof(struct item_)) ;
-    node->board = malloc(WH_BOARD*sizeof(char *)) ;
-    for(int i=0; i<WH_BOARD; i++){
-        node->board[i] = calloc(WH_BOARD, sizeof(char)) ;
+    node->board = malloc(BOARD_SIZE*sizeof(char *)) ;
+    for(int i=0; i<BOARD_SIZE; i++){
+        node->board[i] = calloc(BOARD_SIZE, sizeof(char)) ;
     }
     node->parent = NULL;
     node->next = NULL;
@@ -24,10 +19,12 @@ Item createItem(){
     return node ;
 }
 
+
+// Free l'item
 void freeItem(Item node){
     if(node){
         if(node->board){
-            for(int i=0; i<WH_BOARD; i++){
+            for(int i=0; i<BOARD_SIZE; i++){
                 free(node->board[i]) ;
             }
             free(node->board) ; 
@@ -38,14 +35,20 @@ void freeItem(Item node){
 
 }
 
+
+// Ajoute un enfant à l'Item parent
 void addParentItem(Item father, Item baby){
     baby->parent = father ;
 }
 
+
+// Ajoute un enfant à la liste enfant du parent
 void addChildItem(Item father, Item baby){
     if(father && baby) {
+        // Ajoute l'enfant
         addLast(father->child, baby) ;
 
+        // Définie les paramètre de l'enfant
         baby->depth = father->depth+1 ;
         baby->parent = father ;
         baby->turn = (father->turn+1)%2 ;
@@ -53,39 +56,42 @@ void addChildItem(Item father, Item baby){
 
 }
 
-
+// Copie un plateau sur le plateau d'un Item
 void addBoard(Item node, char **board){
-    for(int i=0; i<WH_BOARD; i++){
-        for(int j=0; j<WH_BOARD; j++){
+    for(int i=0; i<BOARD_SIZE; i++){
+        for(int j=0; j<BOARD_SIZE; j++){
             node->board[i][j] = board[i][j] ;
         }
     }
 }
 
+
+// Modifie l'heuristique d'un Item
 void addHeuristic(Item node, float value){
     node->f = value ;
 
 }
 
+// Ajoute un suivant à un Item
 void addNext(Item prev_n, Item next_n){
     prev_n->next = next_n ;
 }
 
-
+// Ajoute un précédent à un Item
 void addPrev(Item prev_n, Item next_n){
     next_n->prev = prev_n ;
 }
 
 
-
+// Affiche le plateau d'un Item
 void printBoard(Item node){
     if(node != NULL){
-        for(int i=0; i<WH_BOARD; i++){
-            for(int j=0; j<WH_BOARD; j++){
+        for(int i=0; i<BOARD_SIZE; i++){
+            for(int j=0; j<BOARD_SIZE; j++){
                 printf(" %d |", node->board[i][j]) ;
             }
             printf("\n") ;
-            for(int j=0; j<WH_BOARD; j++){
+            for(int j=0; j<BOARD_SIZE; j++){
                 printf("----") ;
             }
             printf("\n") ;
@@ -95,7 +101,6 @@ void printBoard(Item node){
 
 
 
-/*
 int main() {
     // Test de création et libération d'un item
     Item item1 = createItem();
@@ -120,16 +125,16 @@ int main() {
 
     // Test d'ajout de plateau
     Item boardItem = createItem();
-    char** board = malloc(WH_BOARD * sizeof(char*));
-    for (int i = 0; i < WH_BOARD; i++) {
-        board[i] = calloc(WH_BOARD, sizeof(char));
+    char** board = malloc(BOARD_SIZE * sizeof(char*));
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        board[i] = calloc(BOARD_SIZE, sizeof(char));
     }
     // Initialisez le plateau avec des valeurs
     addBoard(boardItem, board);
     // Assurez-vous que les valeurs du plateau correspondent
     // à celles que vous avez ajoutées
     // Puis libérez la mémoire du plateau
-    for (int i = 0; i < WH_BOARD; i++) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
         free(board[i]);
     }
     free(board);
@@ -169,4 +174,3 @@ int main() {
 
     return 0;
 }
-*/

@@ -1,12 +1,12 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> 
+#include <assert.h>
+
+#include "const.h"
+#include "list.h"
 
 #ifndef ITEM_H
 #define ITEM_H
-
-#include "list.h"
-
-#define WH_BOARD 9
 
 
 
