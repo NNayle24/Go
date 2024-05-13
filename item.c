@@ -1,5 +1,5 @@
 #include "item.h"
-#include "list.c"
+// #include "list.c"
 
 // Créé un item, aloue le tableau et la liste enfant
 Item createItem(){
