@@ -18,28 +18,29 @@ void GetChildBoard(Item itm , int x ,int y)
     addBoard(tmp,itm->board);
     if (tmp->turn)
     {
-        tmp->board[x][y]=-1
+        tmp->board[x][y]=-1;
     }
     else 
     {
-        tmp->board[x][y]=1
+        tmp->board[x][y]=1;
     }
-    UpdateBoard(itm,int x , int y ) 
+    UpdateBoard(itm, x, y);
 } 
 
-int IsFinish(Item itm)
+int IsGameOver(Item itm)
 {
-    return 1 ;
+    return 1;
 }
 
-
+float FindHeuristic(Item itm)
+{
+    return 0.0;
+}
 
 void Compute_Game(Item itm)
 {
-    if IsFinish(itm)
-    {
-        addHeuristic(itm)
-    }
+    if(IsGameOver(itm))
+        addHeuristic(itm,FindHeuristic(itm));
     else
     {
         int cond = 1 ;
