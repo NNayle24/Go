@@ -6,7 +6,7 @@ int IsValidPosition(Item itm, int x, int y) {
 
 //Actualise l'état du board en prenant en compte la nouvelle pierre en x,y
 void UpdateBoard(Item itm, int x , int y) {
-    // Détermination de la couleur opposée en fonction de la couleur de la pierre placée
+    // Détermination de la couleur opposée
     int oppositeColor = -(itm->board[x][y]);
 
 
@@ -82,6 +82,8 @@ void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
     }
 }
 
+
+
 void GetChildBoard(Item itm, int x, int y) {
     Item tmp = createItem();
     addParent(tmp, itm);
@@ -95,11 +97,21 @@ void GetChildBoard(Item itm, int x, int y) {
     UpdateBoard(itm, x, y);
 }
 
-int IsGameOver(Item itm)
-{
-    return 1;
+//Vérifie si le board est suffisamment rempli pour le considérer final
+int IsGameOver(Item itm) {
+    int vides = 0;
+    int i, j;
+    for (i = 0; i < BOARD_SIZE; i++) {
+        for (j = 0; j < BOARD_SIZE; j++) {
+            if (itm->board[i][j] == 0) {
+                vides++;
+            }
+        }
+    }
+    return (vides>KOMI)
 }
 
+int 
 
 //Effectue une simulation de partie complète
 void launcher(Item itm) {
@@ -117,7 +129,7 @@ void launcher(Item itm) {
 
 void* Compute_Game(void* itms) {
     Item itm = (Item)itms;
-    if (IsFinish(itm)) {
+    if (IsGameOver(itm)) {
         addHeuristic(itm);
     } else {
         int cond = 1;
