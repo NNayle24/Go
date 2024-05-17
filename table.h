@@ -15,9 +15,9 @@ typedef struct HT_
 
 Zobrist init_zobrist(void);
 
-Table initTable(void);
+HT initTable(void);
 void freeTable(HT);
 void freeZobrist(Zobrist);
 void add(HT,Item);
-Item searchitem(Table,Item);
+Item searchitem(HT,Item,Zobrist);
 int hash(Item);

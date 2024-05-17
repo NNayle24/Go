@@ -108,10 +108,9 @@ int IsGameOver(Item itm) {
             }
         }
     }
-    return (vides>KOMI)
+    //Valeur arbitraire, actuellement la valeur de l'avantage du second joueur
+    return (vides>KOMI);
 }
-
-int 
 
 //Effectue une simulation de partie complète
 void launcher(Item itm) {
@@ -140,7 +139,7 @@ void* Compute_Game(void* itms) {
             if (IsValidPosition(itm, x, y)) {
                 cond = 0;
                 GetChildBoard(itm, x, y);
-                Item tmp = searchItem(HashTable, itm->child->last);
+                Item tmp = searchItem(HashTable, itm->child->last); //@TODO DEF HashTable global
                 if (tmp != NULL) {
                     freeItem(popLast(itm->child));
                     addParent(tmp, itm);

@@ -17,12 +17,13 @@ Zobrist init_zobrist(void)
     }
     tmp->turn=rand();
 }
+
 //initialise la table de hachage
 HT initTable(void)
 {
     HT tmp = malloc(sizeof(HT));
     tmp->itms=malloc(sizeof(Item)*HT_LENGHT);
-    tmp->count =  0
+    tmp->count =  0;
     int i ; 
     for (i=0;i<HT_LENGHT;i++)
     {
@@ -35,16 +36,17 @@ void freeTable(HT table)
 {
     free(table);
 }
+
 //ajoute a la table le pointeur de itm
-void add(HT table ,Item itm)
+void add(HT table ,Item itm,Zobrist zkey)
 {
-    table->itms[hash(itm)]=itm;
+    table->itms[hash(itm,zkey)]=itm;
 }
 
 //renvoi l'existence de l'item dans la structure de données
-int searchitem(Table,Item)
+int searchitem(HT table ,Item itm, Zobrist zkey)
 {
-    return (table->itms[hash(itm)] != NULL);
+    return (table->itms[hash(itm,zkey)] != NULL);
 }
 
 //renvoi le hash/index du plateu
@@ -70,5 +72,5 @@ int hash(Item itm,Zobrist zkey)
             }
         }
     }
-    return hash%HT_SIZE ;
+    return hash%HT_LENGHT ;
 }
