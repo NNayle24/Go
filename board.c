@@ -48,12 +48,14 @@ int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE])
     return 1; //Aucune liberté trouvée, capture
 }
 
+//Retire les pierres capturées du board
 void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
 {
     for (int i = 0; i < BOARD_SIZE; i++)
     {
         for (int j = 0; j < BOARD_SIZE; j++)
         {
+            //Les pierres à retirer sont visitées dans CheckCapture
             if(visited[i][j]==1) itm->board[i][j]=0;
         }
     }
@@ -81,26 +83,31 @@ int IsGameOver(Item itm)
     return 1;
 }
 
-float FindHeuristic(Item itm)
+float GHeuristic(Item itm)
 {
     return 0.0;
 }
 
+//Effectue une simulation de partie complète
 void Compute_Game(Item itm)
 {
+    //Si la partie est terminée, on l'évalue (Won/Lost/Draw)
     if(IsGameOver(itm))
         addHeuristic(itm,FindHeuristic(itm));
+    
+    //Sinon, on joue un coup aléatoire et on poursuit la simulation
     else
     {
-        int cond = 1 ;
-        int  x , y ;
-        while (cond)
+        int foundValidPosition = 0 ;
+        int  x, y ;
+        while(!foundValidPosition)
         {
             x=rand()/BOARD_SIZE;
             y=rand()/BOARD_SIZE;
+
             if (IsValidPosition(itm,x,y))
             {
-                cond = 0 ;
+                foundValidPosition = 1;
                 GetChildBoard(itm,x,y);
                 Compute_Game(itm->child->last);
             }
