@@ -100,7 +100,7 @@ void printBoard(Item node){
 }
 
 
-
+/*
 int main() {
     // Test de création et libération d'un item
     Item item1 = createItem();
@@ -174,3 +174,4 @@ int main() {
 
     return 0;
 }
+*/
