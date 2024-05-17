@@ -20,7 +20,7 @@ void addLast(List, Item);
 void addFirst(List, Item);
 Item popLast(List);
 Item popFirst(List);
-// Item popBest(List);
+Item popBest(List);
 short len(List);
 void prinList(List) ;
 
