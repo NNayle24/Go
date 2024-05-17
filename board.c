@@ -4,15 +4,37 @@ int IsValidPosition(Item itm, int x, int y) {
     return ((itm->board[x][y] != -1) && (itm->board[x][y] != 1));
 }
 
-//Actualise l'état du board en prenant en compte la nouvelle pierre
-void UpdateBoard(Item itm, int x , int y)
-{
-    // Tableau pour se souvenir des cases visitées
-    static int visited[BOARD_SIZE][BOARD_SIZE]={{0}};
+//Actualise l'état du board en prenant en compte la nouvelle pierre en x,y
+void UpdateBoard(Item itm, int x , int y) {
+    // Détermination de la couleur opposée en fonction de la couleur de la pierre placée
+    int oppositeColor = -(itm->board[x][y]);
 
-    if (CheckCapture(itm,x,y,visited)) RemoveStones(itm,visited);
-    memset(visited,0,sizeof(visited[0][0])*BOARD_SIZE*BOARD_SIZE);
+
+    //Tableau pour se souvenir des cases visitées
+    static int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
+
+    //Parcourir les voisins pour vérifier les captures
+    int neighbors[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    for (int i = 0; i < 4; i++) {
+        int nx = x + neighbors[i][0];
+        int ny = y + neighbors[i][1];
+        if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+
+            //Explorer la possibilité de prise seulement sur les pierres ennemies
+            if (itm->board[nx][ny] == oppositeColor) {
+                memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);//Reset du masque des visités
+
+                //Verifier si groupe capturable, si oui retirer les pierres
+                if (CheckCapture(itm, nx, ny, visited)) RemoveStones(itm, visited);
+            
+            }
+        }
+    }
+
+    //Reset du masque des visités
+    memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
 }
+
 
 //Fonction booléenne vérifiant la capture d'une zone en comptant ses libertés, 1 si capture et 0 sinon
 int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE])
@@ -78,11 +100,6 @@ int IsGameOver(Item itm)
     return 1;
 }
 
-float GHeuristic(Item itm)
-{
-    return 0.0;
-}
-
 
 //Effectue une simulation de partie complète
 void launcher(Item itm) {
@@ -111,12 +128,12 @@ void* Compute_Game(void* itms) {
             if (IsValidPosition(itm, x, y)) {
                 cond = 0;
                 GetChildBoard(itm, x, y);
-                Item tmp = searchItem(table, itm->child->last);
+                Item tmp = searchItem(HashTable, itm->child->last);
                 if (tmp != NULL) {
                     freeItem(popLast(itm->child));
                     addParent(tmp, itm);
                     addChildItem(itm, tmp); // add last
-                    add(table, itm->child->last);
+                    add(HashTable, itm->child->last);
                 }
                 Compute_Game((void*)itm->child->last);
             }
@@ -149,8 +166,8 @@ int move(Item itm) {
     GetHeuristic(itm);
     Item max = popBest(itm->child);
     eraseList(itm->child);
-    *itm = max ;
+    *itm = *max ;
     freeItem(itm -> parent);
-    itm->paent = NULL ; 
+    itm->parent = NULL ; 
     return 0;
 }
