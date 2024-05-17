@@ -1,7 +1,9 @@
 
 #include "list.h"
-// #include "item.c"
+#include "item.c"
 
+
+// Créé une liste vide
 List createList(){
     List tmp = malloc(sizeof(struct list_)) ;
     tmp->first = NULL ;
@@ -33,6 +35,7 @@ void eraseList(List liste){
     }
 }
 
+// Ajoute un élément à la fin de la liste
 void addLast(List liste, Item node){
     if(liste->len == 0){
         liste->first = node ;
@@ -49,7 +52,7 @@ void addLast(List liste, Item node){
 
 }
 
-
+// Ajoute un élément au début de la liste
 void addFirst(List liste, Item node){
     if(liste && node){
         if(liste->len == 0){
@@ -69,7 +72,7 @@ void addFirst(List liste, Item node){
 }
 
 
-
+// Supprime et renvoie le dernier élément de la liste
 Item popLast(List liste){
     Item tmp = createItem() ;
     tmp = liste->last ;
@@ -89,7 +92,7 @@ Item popLast(List liste){
     return tmp ;
 }
 
-
+// Supprime et renvoie le premier élément de la liste
 Item popFirst(List liste){
     Item tmp = createItem() ;
     tmp = liste->first ;
@@ -108,29 +111,47 @@ Item popFirst(List liste){
     return tmp ;
 }
 
-/*
+
+// Retourne l'Item avec le f maximal de la liste
 Item popBest(List liste){
     Item tmp = createItem() ;
     Item best = createItem() ;
-    tmp = liste->first ;
-    best = tmp ;
-    if(liste){
-        while(tmp->next != NULL){
-            if(tmp->f < best->f){
+    best = liste->first ;
+    tmp = best->next ;
+    if(liste->len != 0){
+        // Recherche sequentiel Item avec f max
+        while(tmp != NULL){
+            if(best->f < tmp->f){
                 best = tmp ;
             }
+            tmp = tmp->next ;
+        }
+
+        // Suppression de la liste
+        if(liste->first == best){
+            popFirst(liste) ;
+        }
+        else if(liste->last == best){
+            popLast(liste) ;
+        }
+        else{
+            tmp = best->prev ;
+            tmp->next = best->next ;
+            tmp->next->prev = tmp ;
         }
     }
-    return best ;
 
+    return best ;      
 }
-*/
 
+
+// Renvoie la taille de la liste
 short len(List liste){
     return liste->len ;
 }
 
 
+// Affiche la liste
 void printList(List list) {
     if(list->len == 0 && list->first == NULL && list->last == NULL){
         printf("\nListe vide\n") ;
@@ -158,7 +179,7 @@ void printList(List list) {
 
 
 
-/*
+
 int main(){
   // Test de création de liste
     List myList = createList();
@@ -194,6 +215,16 @@ int main(){
 
 
     // Test de suppression d'éléments
+    int j = 1 ;
+    while(myList->len != 0){
+        printf("---iteration : %d---\n", j) ;
+        popBest(myList) ;
+        printList(myList) ;
+        printf("nb element %d\n", myList->len) ;
+        j++ ;
+    }
+
+    /*
     Item poppedFirst = popFirst(myList);
     assert(poppedFirst == item3);
     assert(myList->len == 2);
@@ -212,6 +243,8 @@ int main(){
     printList(myList);
 
     printf("\n --- test free liste --- \n") ;
+
+    */
     // Ajouter 10 éléments à la liste
     List newList = createList() ;
     for (int i = 0; i < 10; i++) {
@@ -221,11 +254,23 @@ int main(){
     }
 
     printList(newList) ;
+    /*
+    int k = 1 ;
+    while(newList->len != 0){
+        printf("---iteration : %d---\n", k) ;
+        popBest(newList) ;
+        printList(newList) ;
+        printf("nb element %d\n", myList->len) ;
+        k++ ;
+    }
+    */
+
     printf("\nnb element %d", newList->len) ;
 
     eraseList(newList) ;
     printList(newList) ;
     printf("\nnb element %d", newList->len) ;
+    
 
 
 
@@ -236,4 +281,3 @@ int main(){
 
     return 0;
 }
-*/
