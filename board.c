@@ -1,9 +1,8 @@
-#include "struct.h"
+#include "board.h"
 
-int IsValidPosition(Item itm,int x , int y )
-{
-    return (itm->board[x][y]==0);
-} 
+int IsValidPosition(Item itm, int x, int y) {
+    return ((itm->board[x][y] != -1) && (itm->board[x][y] != 1));
+}
 
 //Actualise l'état du board en prenant en compte la nouvelle pierre
 void UpdateBoard(Item itm, int x , int y)
@@ -61,22 +60,18 @@ void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
     }
 }
 
-void GetChildBoard(Item itm , int x ,int y)
-{
+void GetChildBoard(Item itm, int x, int y) {
     Item tmp = createItem();
-    addParent(tmp,itm);
-    addChildItem(itm,tmp); // add last
-    addBoard(tmp,itm->board);
-    if (tmp->turn)
-    {
-        tmp->board[x][y]=-1;
-    }
-    else 
-    {
-        tmp->board[x][y]=1;
+    addParent(tmp, itm);
+    addChildItem(itm, tmp); // add last
+    addBoard(tmp, itm->board);
+    if (tmp->turn) {
+        tmp->board[x][y] = -1;
+    } else {
+        tmp->board[x][y] = 1;
     }
     UpdateBoard(itm, x, y);
-} 
+}
 
 int IsGameOver(Item itm)
 {
@@ -88,29 +83,74 @@ float GHeuristic(Item itm)
     return 0.0;
 }
 
-//Effectue une simulation de partie complète
-void Compute_Game(Item itm)
-{
-    //Si la partie est terminée, on l'évalue (Won/Lost/Draw)
-    if(IsGameOver(itm))
-        addHeuristic(itm,FindHeuristic(itm));
-    
-    //Sinon, on joue un coup aléatoire et on poursuit la simulation
-    else
-    {
-        int foundValidPosition = 0 ;
-        int  x, y ;
-        while(!foundValidPosition)
-        {
-            x=rand()/BOARD_SIZE;
-            y=rand()/BOARD_SIZE;
 
-            if (IsValidPosition(itm,x,y))
-            {
-                foundValidPosition = 1;
-                GetChildBoard(itm,x,y);
-                Compute_Game(itm->child->last);
+//Effectue une simulation de partie complète
+void launcher(Item itm) {
+    pthread_t threads[MAX_THREADS];
+    int i, num_threads = 0;
+
+    while (num_threads < MAX_THREADS) {
+        pthread_create(&threads[num_threads], NULL, &Compute_Game, (void*)itm);
+        num_threads++;
+    }
+    for (i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+}
+
+void* Compute_Game(void* itms) {
+    Item itm = (Item)itms;
+    if (IsFinish(itm)) {
+        addHeuristic(itm);
+    } else {
+        int cond = 1;
+        int x, y;
+        while (cond) {
+            x = rand() % BOARD_SIZE;
+            y = rand() % BOARD_SIZE;
+            if (IsValidPosition(itm, x, y)) {
+                cond = 0;
+                GetChildBoard(itm, x, y);
+                Item tmp = searchItem(table, itm->child->last);
+                if (tmp != NULL) {
+                    freeItem(popLast(itm->child));
+                    addParent(tmp, itm);
+                    addChildItem(itm, tmp); // add last
+                    add(table, itm->child->last);
+                }
+                Compute_Game((void*)itm->child->last);
             }
         }
     }
+    return NULL;
+}
+
+float GetHeuristic(Item itm) {
+    if (itm->f != -1.0) {
+        return itm->f;
+    }
+    float score = 0;
+    int i;
+    Item current = itm->child->first;
+    for (i = 0; i < itm->child->len; i++) {
+        score += GetHeuristic(current);
+        current = current->next;
+    }
+    score = score / itm->child->len;
+    addHeuristic(itm, score);
+    return score;
+}
+
+int move(Item itm) {
+    if (IsWin(itm)) {
+        return 1;
+    }
+    launcher(itm);
+    GetHeuristic(itm);
+    Item max = popBest(itm->child);
+    eraseList(itm->child);
+    *itm = max ;
+    freeItem(itm -> parent);
+    itm->paent = NULL ; 
+    return 0;
 }
