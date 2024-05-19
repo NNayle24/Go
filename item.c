@@ -1,7 +1,7 @@
 #include "item.h"
 // #include "list.c"
 
-// Créé un item, aloue le tableau et la liste enfant
+// Créé un item, alloue le tableau et la liste enfant
 Item createItem(){
     Item node = malloc(sizeof(struct item_)) ;
     node->board = malloc(BOARD_SIZE*sizeof(char *)) ;

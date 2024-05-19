@@ -1,6 +1,6 @@
 #include "table.h"
 //initialise les tables d'indexations des coups
-Zobrist init_zobrist(void)
+Zobrist initZobrist(void)
 {
     int i ,j;
     Zobrist tmp = malloc(sizeof(Zobrist));
@@ -16,16 +16,17 @@ Zobrist init_zobrist(void)
         }
     }
     tmp->turn=rand();
+    return tmp;
 }
 
 //initialise la table de hachage
 HT initTable(void)
 {
     HT tmp = malloc(sizeof(HT));
-    tmp->itms=malloc(sizeof(Item)*HT_LENGHT);
+    tmp->itms=malloc(sizeof(Item)*HT_LENGTH);
     tmp->count =  0;
     int i ; 
-    for (i=0;i<HT_LENGHT;i++)
+    for (i=0;i<HT_LENGTH;i++)
     {
         tmp->itms[i]=NULL;
     }
@@ -38,15 +39,15 @@ void freeTable(HT table)
 }
 
 //ajoute a la table le pointeur de itm
-void add(HT table ,Item itm,Zobrist zkey)
+void addToTable(HT table ,Item itm,Zobrist zkey)
 {
     table->itms[hash(itm,zkey)]=itm;
 }
 
 //renvoi l'existence de l'item dans la structure de données
-int searchitem(HT table ,Item itm, Zobrist zkey)
+Item searchItem(HT table ,Item itm, Zobrist zkey)
 {
-    return (table->itms[hash(itm,zkey)] != NULL);
+    return(table->itms[hash(itm,zkey)]);
 }
 
 //renvoi le hash/index du plateu
@@ -72,5 +73,5 @@ int hash(Item itm,Zobrist zkey)
             }
         }
     }
-    return hash%HT_LENGHT ;
+    return hash%HT_LENGTH ;
 }

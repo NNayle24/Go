@@ -1,17 +1,17 @@
 #ifndef LIST_H
 #define LIST_H
 
+//Déclaration avancée pour eviter les soucis d'inclusion circulaire
+struct item_;
+typedef struct item_ *Item;
+
 #include "item.h"
- 
 
-
-typedef struct list_ 
-{
+typedef struct list_ {
     Item first;
     Item last;
-    short len ;
-
-} * List ;
+    short len;
+} *List;
 
 List createList(void);
 void freeList(List);
@@ -22,6 +22,6 @@ Item popLast(List);
 Item popFirst(List);
 Item popBest(List);
 short len(List);
-void prinList(List) ;
+void prinList(List);
 
 #endif // LIST_H

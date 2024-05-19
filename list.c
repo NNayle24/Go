@@ -1,6 +1,5 @@
-
 #include "list.h"
-#include "item.c"
+//#include "item.c"
 
 
 // Créé une liste vide
@@ -71,10 +70,9 @@ void addFirst(List liste, Item node){
 
 }
 
-
 // Supprime et renvoie le dernier élément de la liste
 Item popLast(List liste){
-    Item tmp = createItem() ;
+    Item tmp;
     tmp = liste->last ;
     if(liste->len != 0){
         if(liste->len == 1){
@@ -84,7 +82,6 @@ Item popLast(List liste){
         else{
             liste->last = tmp->prev ;
             liste->last->next = NULL ;
-            tmp->prev ;
         }
         liste->len-- ;
     }
@@ -94,7 +91,7 @@ Item popLast(List liste){
 
 // Supprime et renvoie le premier élément de la liste
 Item popFirst(List liste){
-    Item tmp = createItem() ;
+    Item tmp;
     tmp = liste->first ;
     if(liste->len != 0){
         if(liste->len == 1){
@@ -114,8 +111,8 @@ Item popFirst(List liste){
 
 // Retourne l'Item avec le f maximal de la liste
 Item popBest(List liste){
-    Item tmp = createItem() ;
-    Item best = createItem() ;
+    Item tmp;
+    Item best;
     best = liste->first ;
     tmp = best->next ;
     if(liste->len != 0){
@@ -179,7 +176,7 @@ void printList(List list) {
 
 
 
-
+/*
 int main(){
   // Test de création de liste
     List myList = createList();
@@ -224,7 +221,7 @@ int main(){
         j++ ;
     }
 
-    /*
+    
     Item poppedFirst = popFirst(myList);
     assert(poppedFirst == item3);
     assert(myList->len == 2);
@@ -244,7 +241,7 @@ int main(){
 
     printf("\n --- test free liste --- \n") ;
 
-    */
+    
     // Ajouter 10 éléments à la liste
     List newList = createList() ;
     for (int i = 0; i < 10; i++) {
@@ -254,7 +251,7 @@ int main(){
     }
 
     printList(newList) ;
-    /*
+    
     int k = 1 ;
     while(newList->len != 0){
         printf("---iteration : %d---\n", k) ;
@@ -263,7 +260,7 @@ int main(){
         printf("nb element %d\n", myList->len) ;
         k++ ;
     }
-    */
+    
 
     printf("\nnb element %d", newList->len) ;
 
@@ -281,3 +278,4 @@ int main(){
 
     return 0;
 }
+*/

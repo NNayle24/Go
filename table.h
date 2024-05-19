@@ -1,23 +1,25 @@
-#include "item.h"
+#ifndef TABLE_H
+#define TABLE_H
+
 #include <stdlib.h>
-typedef struct Zobrist_
-{
-    int *** tab;
-    int turn ;
-} * Zobrist ;
+#include "item.h"
 
-typedef struct HT_
-{
-    Item * itms;
-    int count ;
-} * HT ;
+typedef struct Zobrist_ {
+    int ***tab;
+    int turn;
+} *Zobrist;
 
+typedef struct HT_ {
+    Item *itms;
+    int count;
+} *HT;
 
-Zobrist init_zobrist(void);
-
+Zobrist initZobrist(void);
 HT initTable(void);
 void freeTable(HT);
 void freeZobrist(Zobrist);
-void add(HT,Item);
-Item searchitem(HT,Item,Zobrist);
-int hash(Item);
+void addToTable(HT, Item, Zobrist);
+Item searchItem(HT, Item, Zobrist);
+int hash(Item, Zobrist);
+
+#endif // TABLE_H

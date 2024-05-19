@@ -1,5 +1,14 @@
 #include "board.h"
 
+//GCC memset
+void* memset (void *dest, int val, size_t len)
+{
+  unsigned char *ptr = dest;
+  while (len-- > 0)
+    *ptr++ = val;
+  return dest;
+}
+
 int IsValidPosition(Item itm, int x, int y) {
     return ((itm->board[x][y] != -1) && (itm->board[x][y] != 1));
 }
@@ -86,7 +95,7 @@ void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
 
 void GetChildBoard(Item itm, int x, int y) {
     Item tmp = createItem();
-    addParent(tmp, itm);
+    addParentItem(tmp, itm);
     addChildItem(itm, tmp); // add last
     addBoard(tmp, itm->board);
     if (tmp->turn) {
@@ -112,13 +121,19 @@ int IsGameOver(Item itm) {
     return (vides>KOMI);
 }
 
-//Effectue une simulation de partie complète
-void launcher(Item itm) {
+//Lance des simulations de parties dans des threads
+void runGame(Item itm, HT hashTable, Zobrist zkey) {
     pthread_t threads[MAX_THREADS];
     int i, num_threads = 0;
 
+    //Compilation des arguments pour les threads
+    ComputeGameArgs args;
+    args.itm = itm;
+    args.hashTable = hashTable;
+    args.zKey = zkey;
+
     while (num_threads < MAX_THREADS) {
-        pthread_create(&threads[num_threads], NULL, &Compute_Game, (void*)itm);
+        pthread_create(&threads[num_threads], NULL, ComputeGame, &args);
         num_threads++;
     }
     for (i = 0; i < num_threads; i++) {
@@ -126,11 +141,18 @@ void launcher(Item itm) {
     }
 }
 
-void* Compute_Game(void* itms) {
-    Item itm = (Item)itms;
+//Joue une partie jusqu'à sa complétion
+void* ComputeGame(void* args) {
+    //Décompilations des arguments
+    ComputeGameArgs* gameArgs = (ComputeGameArgs*)args;
+    Item itm = gameArgs->itm;
+    HT HashTable = gameArgs->hashTable;
+    Zobrist zkey = gameArgs->zKey;
+
     if (IsGameOver(itm)) {
-        addHeuristic(itm);
-    } else {
+        addHeuristic(itm, 0.0); //@TODO replace float by getWinner function
+    } 
+    else {
         int cond = 1;
         int x, y;
         while (cond) {
@@ -139,14 +161,20 @@ void* Compute_Game(void* itms) {
             if (IsValidPosition(itm, x, y)) {
                 cond = 0;
                 GetChildBoard(itm, x, y);
-                Item tmp = searchItem(HashTable, itm->child->last); //@TODO DEF HashTable global
+                Item tmp = searchItem(HashTable, itm->child->last, zkey);
                 if (tmp != NULL) {
                     freeItem(popLast(itm->child));
-                    addParent(tmp, itm);
+                    addParentItem(tmp, itm);
                     addChildItem(itm, tmp); // add last
-                    add(HashTable, itm->child->last);
+                    addToTable(HashTable, itm->child->last, zkey);
                 }
-                Compute_Game((void*)itm->child->last);
+                
+                ComputeGameArgs nextComputeGameArgs;
+                nextComputeGameArgs.itm = tmp;
+                nextComputeGameArgs.hashTable = HashTable;
+                nextComputeGameArgs.zKey = zkey;
+
+                ComputeGame(&nextComputeGameArgs);
             }
         }
     }
@@ -169,11 +197,11 @@ float GetHeuristic(Item itm) {
     return score;
 }
 
-int move(Item itm) {
-    if (IsWin(itm)) {
+int move(Item itm, HT hashTable, Zobrist zkey) {
+    if (IsGameOver(itm)) {
         return 1;
     }
-    launcher(itm);
+    runGame(itm, hashTable, zkey);
     GetHeuristic(itm);
     Item max = popBest(itm->child);
     eraseList(itm->child);
