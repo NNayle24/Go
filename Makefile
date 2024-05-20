@@ -8,7 +8,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -I.
 
 # Liste des fichiers source
-SRCS = board.c item.c list.c table.c
+SRCS = board.c item.c list.c table.c test_board.c
 
 # Génère la liste des fichiers objets correspondants
 OBJS = $(SRCS:.c=.o)
@@ -18,7 +18,7 @@ all: $(TARGET)
 
 # Règle pour créer l'exécutable
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -pthread -o $@ $^
 
 # Règle pour compiler les fichiers source en objets
 %.o: %.c
