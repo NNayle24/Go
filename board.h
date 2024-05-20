@@ -3,6 +3,7 @@
 
 #include "struct.h"
 #include <pthread.h>
+#include <string.h>
 
 //Permet de passer tous les args sous un même void* pour les threads
 typedef struct ComputeGameArgs_ {
@@ -10,6 +11,11 @@ typedef struct ComputeGameArgs_ {
     HT hashTable;
     Zobrist zKey;
 } ComputeGameArgs;
+
+typedef struct {
+    int x;
+    int y;
+} Point;
 
 
 int IsValidPosition(Item, int, int);
@@ -21,5 +27,8 @@ int IsGameOver(Item);
 void runGame(Item, HT, Zobrist);
 void* ComputeGame(void*);
 float GetHeuristic(Item);
+void flood_fill(char **board, int x, int y, char color, Point *territory, int *size);
+char determine_territory_owner(char **board, Point *territory, int size);
+void calculate_scores(char **board, int *black_score, int *white_score);
 
 #endif // BOARD_H

@@ -1,5 +1,6 @@
 #include "board.h"
 
+
 //GCC memset
 void* memset (void *dest, int val, size_t len)
 {
@@ -199,6 +200,94 @@ float GetHeuristic(Item itm) {
     score = score / itm->child->len;
     addHeuristic(itm, score);
     return score;
+}
+
+
+// Fonction de remplissage par diffusion pour marquer un territoire
+void flood_fill(char **board, int x, int y, char color, Point *territory, int *size) {
+    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE || board[x][y] != 0) {
+        return;
+    }
+
+    board[x][y] = color;
+    territory[*size].x = x;
+    territory[*size].y = y;
+    (*size)++;
+
+    flood_fill(board, x + 1, y, color, territory, size);
+    flood_fill(board, x - 1, y, color, territory, size);
+    flood_fill(board, x, y + 1, color, territory, size);
+    flood_fill(board, x, y - 1, color, territory, size);
+}
+
+// Fonction pour déterminer le propriétaire d'un territoire
+char determine_territory_owner(char **board, Point *territory, int size) {
+    int black_adjacent = 0;
+    int white_adjacent = 0;
+
+    for (int i = 0; i < size; i++) {
+        int x = territory[i].x;
+        int y = territory[i].y;
+
+        if (x > 0 && board[x - 1][y] == -1) black_adjacent = 1;
+        if (x < BOARD_SIZE - 1 && board[x + 1][y] == -1) black_adjacent = 1;
+        if (y > 0 && board[x][y - 1] == -1) black_adjacent = 1;
+        if (y < BOARD_SIZE - 1 && board[x][y + 1] == -1) black_adjacent = 1;
+
+        if (x > 0 && board[x - 1][y] == 1) white_adjacent = 1;
+        if (x < BOARD_SIZE - 1 && board[x + 1][y] == 1) white_adjacent = 1;
+        if (y > 0 && board[x][y - 1] == 1) white_adjacent = 1;
+        if (y < BOARD_SIZE - 1 && board[x][y + 1] == 1) white_adjacent = 1;
+    }
+
+    if (black_adjacent && !white_adjacent) {
+        return -1;
+    } else if (white_adjacent && !black_adjacent) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+// Fonction pour calculer les scores des joueurs
+void calculate_scores(char **board, int *black_score, int *white_score) {
+
+    // Allocation dynamique de la mémoire pour le plateau temporaire
+    char **temp_board = malloc(BOARD_SIZE * sizeof(char *));
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        temp_board[i] = malloc(BOARD_SIZE * sizeof(char));
+        memcpy(temp_board[i], board[i], BOARD_SIZE * sizeof(char)); // Copier le plateau
+    }
+
+    Point territory[BOARD_SIZE * BOARD_SIZE];
+    int size;
+    *black_score = 0;
+    *white_score = 0;
+
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (temp_board[i][j] == 0) {
+                size = 0;
+                flood_fill(temp_board, i, j, 2, territory, &size);
+                char owner = determine_territory_owner(board, territory, size);
+                if (owner == -1) {
+                    *black_score += size;
+                } else if (owner == 1) {
+                    *white_score += size;
+                }
+            } else if (temp_board[i][j] == -1) {
+                (*black_score)++;
+            } else if (temp_board[i][j] == 1) {
+                (*white_score)++;
+            }
+        }
+    }
+
+    // Libération de la mémoire du plateau temporaire
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        free(temp_board[i]);
+    }
+    free(temp_board);
 }
 
 int move(Item itm, HT hashTable, Zobrist zkey) {
