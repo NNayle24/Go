@@ -88,7 +88,9 @@ void printBoard(Item node){
     if(node != NULL){
         for(int i=0; i<BOARD_SIZE; i++){
             for(int j=0; j<BOARD_SIZE; j++){
-                printf(" %d |", node->board[i][j]) ;
+                if(node->board[i][j]==0) printf("   |") ;
+                else if(node->board[i][j]==1) printf(" + |") ;
+                else printf(" - |") ;
             }
             printf("\n") ;
             for(int j=0; j<BOARD_SIZE; j++){
@@ -97,6 +99,7 @@ void printBoard(Item node){
             printf("\n") ;
         }
     }
+    printf("\n") ;
 }
 
 
