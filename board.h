@@ -29,6 +29,6 @@ void* ComputeGame(void*);
 float GetHeuristic(Item);
 void flood_fill(char **board, int x, int y, char color, Point *territory, int *size);
 char determine_territory_owner(char **board, Point *territory, int size);
-void calculate_scores(char **board, int *black_score, int *white_score);
+float calculate_scores(char **board);
 
 #endif // BOARD_H

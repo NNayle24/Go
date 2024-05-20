@@ -155,7 +155,7 @@ void* ComputeGame(void* args) {
     Zobrist zkey = gameArgs->zKey;
 
     if (IsGameOver(itm)) {
-        addHeuristic(itm, 0.0); //@TODO replace float by getWinner function
+        addHeuristic(itm, calculate_scores(itm->board)); //@TODO replace float by getWinner function
     } 
     else {
         int cond = 1;
@@ -250,8 +250,7 @@ char determine_territory_owner(char **board, Point *territory, int size) {
 }
 
 // Fonction pour calculer les scores des joueurs
-void calculate_scores(char **board, int *black_score, int *white_score) {
-
+float calculate_scores(char **board) {
     // Allocation dynamique de la mémoire pour le plateau temporaire
     char **temp_board = malloc(BOARD_SIZE * sizeof(char *));
     for (int i = 0; i < BOARD_SIZE; i++) {
@@ -261,8 +260,8 @@ void calculate_scores(char **board, int *black_score, int *white_score) {
 
     Point territory[BOARD_SIZE * BOARD_SIZE];
     int size;
-    *black_score = 0;
-    *white_score = 0;
+    float black_score = 0.0 ;
+    float white_score = KOMI ;
 
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
@@ -271,14 +270,14 @@ void calculate_scores(char **board, int *black_score, int *white_score) {
                 flood_fill(temp_board, i, j, 2, territory, &size);
                 char owner = determine_territory_owner(board, territory, size);
                 if (owner == -1) {
-                    *black_score += size;
+                    black_score += size;
                 } else if (owner == 1) {
-                    *white_score += size;
+                    white_score += size;
                 }
             } else if (temp_board[i][j] == -1) {
-                (*black_score)++;
+                (black_score)++;
             } else if (temp_board[i][j] == 1) {
-                (*white_score)++;
+                (white_score)++;
             }
         }
     }
@@ -288,6 +287,8 @@ void calculate_scores(char **board, int *black_score, int *white_score) {
         free(temp_board[i]);
     }
     free(temp_board);
+
+    return  ((white_score - black_score)>0)*1.0;
 }
 
 int move(Item itm, HT hashTable, Zobrist zkey) {
