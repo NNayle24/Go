@@ -1,14 +1,14 @@
 # Nom de l'exécutable final
-TARGET = my_program
+TARGET = classiGo
 
 # Compilateur
 CC = gcc
 
 # Options de compilation
-CFLAGS = -Wall -Wextra -I.
+CFLAGS = -Wall -Wextra -I. -pthread
 
 # Liste des fichiers source
-SRCS = board.c item.c list.c table.c test_board.c
+SRCS = board.c item.c list.c table.c
 
 # Génère la liste des fichiers objets correspondants
 OBJS = $(SRCS:.c=.o)
@@ -18,7 +18,7 @@ all: $(TARGET)
 
 # Règle pour créer l'exécutable
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -pthread -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^
 
 # Règle pour compiler les fichiers source en objets
 %.o: %.c
