@@ -10,7 +10,7 @@ void* memset (void *dest, int val, size_t len)
 }
 
 int IsValidPosition(Item itm, int x, int y) {
-    return ((itm->board[x][y] != -1) && (itm->board[x][y] != 1));
+    return ( x>=0 && y>=0 && y < BOARD_SIZE && x<BOARD_SIZE && (itm->board[x][y] != -1) && (itm->board[x][y] != 1));
 }
 
 //Actualise l'état du board en prenant en compte la nouvelle pierre en x,y
@@ -21,6 +21,9 @@ void UpdateBoard(Item itm, int x , int y) {
 
     //Tableau pour se souvenir des cases visitées
     static int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
+
+    //Check si la pierre posée est suicidée
+    //if(CheckCapture(itm, x, y, visited)) RemoveStones(itm, visited);
 
     //Parcourir les voisins pour vérifier les captures
     int neighbors[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
@@ -45,6 +48,7 @@ void UpdateBoard(Item itm, int x , int y) {
 }
 
 
+/**/
 //Fonction booléenne vérifiant la capture d'une zone en comptant ses libertés, 1 si capture et 0 sinon
 int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE])
 {
@@ -52,7 +56,7 @@ int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE])
     int dx[] = {-1,0,1,0};
     int dy[] = {0,1,0,-1};
     
-    //On mouille la case
+    //On mouille la pierre
     visited[x][y] = 1;
 
 
