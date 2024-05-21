@@ -11,7 +11,7 @@ Item createItem(){
     node->parent = NULL;
     node->next = NULL;
     node->prev = NULL;
-    node->f = 0.0;
+    node->f = -1.0;
     node->depth = 0;
     node->turn = 0;
     node->child = createList() ;
@@ -28,6 +28,7 @@ void freeItem(Item node){
                 free(node->board[i]) ;
             }
             free(node->board) ; 
+        freeList(node->child);
         }
         free(node) ;
 
