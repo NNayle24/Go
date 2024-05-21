@@ -26,7 +26,7 @@ void eraseList(List liste){
         while(liste->len > 0){
             tmp = liste->first ;
             liste->first = tmp->next ;
-            free(tmp) ;
+            freeItem(tmp) ;
             liste->len-- ;
         }
         liste->first = NULL ;
