@@ -32,10 +32,24 @@ HT initTable(void)
     }
     return tmp ;
 }
-//libere la mémoire de la table de hachage , a voir si il faut free les items
-void freeTable(HT table)
+
+//libere les tables de zobrist
+void freeZobrist(Zobrist zkey)
 {
-    free(table);
+    if (zkey != NULL)
+    {
+        for (int i = 0; i < BOARD_SIZE; i++)
+        {
+            for (int j = 0; j < BOARD_SIZE; j++)
+            {
+                free(zkey->tab[i][j]);  // Free the innermost arrays
+            }
+            free(zkey->tab[i]);  // Free the middle arrays
+        }
+        free(zkey->tab);  // Free the outermost array
+        free(zkey->turn);
+        free(zkey);  // Finally, free the Zobrist struct itself
+    }
 }
 
 //ajoute a la table le pointeur de itm
@@ -74,4 +88,13 @@ int hash(Item itm,Zobrist zkey)
         }
     }
     return hash%HT_LENGTH ;
+}
+
+void eraseHT(HT hashtable) 
+{
+    int i ; 
+    for(i=0;i<HT_LENGTH;i++)
+    {
+        hashtable->itms[i]=NULL;
+    }
 }
