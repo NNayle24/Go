@@ -250,6 +250,7 @@ char determine_territory_owner(char **board, Point *territory, int size) {
 }
 
 // Fonction pour calculer les scores des joueurs
+// 1.0 si blanc gagne 0.0 si blanc perd
 float calculate_scores(char **board) {
     // Allocation dynamique de la mémoire pour le plateau temporaire
     char **temp_board = malloc(BOARD_SIZE * sizeof(char *));
