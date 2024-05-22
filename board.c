@@ -1,14 +1,5 @@
 #include "board.h"
 
-
-//GCC memset implementation 
-void* memset(void *dest, int val, size_t len) {
-    unsigned char *ptr = dest;
-    while (len-- > 0)
-        *ptr++ = val;
-    return dest;
-}
-
 //Verifie si la position est ni hors du tableau ni occupé
 int IsValidPosition(Item itm, int x, int y) {
     return (x >= 0 && y >= 0 && y < BOARD_SIZE && x < BOARD_SIZE && (itm->board[x][y] != -1) && (itm->board[x][y] != 1));
@@ -91,7 +82,7 @@ float simulate(Item itm) {
 }
 
 
-//remonte la branche pour mettre a jour le nombre de visite des noeuds et les victoires
+//remonte la branche pour mettre a jour le nombre de visites des noeuds et les victoires
 void backpropagate(Item itm, float result) {
     //printf("back...\n");
     while (itm!=NULL)
@@ -141,7 +132,7 @@ Item select_node(Item root) {
 
 
 
-//Genere tout les fils possible d'un plateau
+//Genere tous les fils possible d'un plateau
 void expand_node(Item itm) {
     //printf("expand...\n");
     pthread_mutex_lock(&itm->lock);
@@ -233,11 +224,12 @@ char determine_territory_owner(char **board, Point *territory, int size) {
 // 1.0 si blanc gagne 0.0 si blanc perd
 float calculate_scores(char **board) {
     //printf("start calculate\n");
-    char **temp_board = malloc(BOARD_SIZE * sizeof(char *));
+    char **temp_board = (char **)malloc(BOARD_SIZE * sizeof(char *));
     for (int i = 0; i < BOARD_SIZE; i++) {
-        temp_board[i] = malloc(BOARD_SIZE * sizeof(char));
+        temp_board[i] = (char *)malloc(BOARD_SIZE * sizeof(char));
         memcpy(temp_board[i], board[i], BOARD_SIZE * sizeof(char)); 
     }
+
 
     Point territory[BOARD_SIZE * BOARD_SIZE];
     int size;
@@ -346,12 +338,12 @@ void IA_computing(char** tab, int* x, int* y )
 }
 
 
-
+/*
 int main (void)
 {
     return 1 ;
 }
-/*
+
 int main() {
     srand(time(NULL));
 
