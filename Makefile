@@ -1,31 +1,34 @@
-# Nom de l'exécutable final
-TARGET = my_program
+# Compiler settings - Can use g++ for both C and C++
+CC = g++
+CFLAGS = -g -Wall -c
+CPPFLAGS = $(CFLAGS)  # Add C++ specific flags if necessary
+LFLAGS = -lpthread -lm -lsfml-graphics -lsfml-window -lsfml-system
 
-# Compilateur
-CC = gcc
+# Output binary
+OUT = classiGO
 
-# Options de compilation
-CFLAGS = -Wall -Wextra -I. -pthread  -lm
+# Object files
+OBJS = board.o item.o list.o go_interface.o
 
-# Liste des fichiers source
-SRCS = board.c item.c list.c table.c test_board.c board2.c
+# Source and header files (used only for dependency)
+SOURCE = board.c item.c list.c go_interface.cpp
+HEADER = board.h const.h item.h list.h struct.h
 
-# Génère la liste des fichiers objets correspondants
-OBJS = $(SRCS:.c=.o)
+all: $(OUT)
 
-# Règle par défaut
-all: $(TARGET)
+$(OUT): $(OBJS)
+	$(CC) $(OBJS) -o $@ $(LFLAGS)
 
-# Règle pour créer l'exécutable
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
-
-# Règle pour compiler les fichiers source en objets
+# Pattern rule for C source
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
-# Nettoyage des fichiers objets et de l'exécutable
+# Pattern rule for C++ source
+%.o: %.cpp
+	$(CC) $(CPPFLAGS) $< -o $@
+
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(OUT)
 
 .PHONY: all clean
+
