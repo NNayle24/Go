@@ -72,6 +72,82 @@ public:
         }
     }
 };
+class Button
+{
+	private:
+	bool onScreen;
+	sf::Text texte;
+	sf::RectangleShape rect;
+	sf::Font font;
+	public:
+	Button(sf::Vector2f position,sf::Vector2f size,std::string label)
+	{
+		rect.setSize(size);
+		rect.setPosition(position);
+		rect.setFillColor(sf::Color::Red);
+		font.loadFromFile("Arial.ttf");
+		texte.setFont(font);
+		texte.setString(label);
+		texte.setCharacterSize(20);
+		texte.setFillColor(sf::Color::Black);
+		texte.setPosition(sf::Vector2f(position.x,position.y));
+	}
+	virtual void onClick(){}
+	void setOnScreen(bool booleen){
+		onScreen=booleen;
+	}
+	bool getOnScreen(){
+		return onScreen;
+	}
+	void draw(sf::RenderWindow& window) {
+		setOnScreen(true);
+        window.draw(rect);
+        window.draw(texte);
+    }
+
+    bool isMouseOver(const sf::Vector2f& mousePos) const {
+        return (rect.getGlobalBounds().contains(mousePos));
+    }
+
+
+
+};
+class Play : public Button
+{
+	private:
+	bool onScreen;
+	sf::Text texte;
+	sf::RectangleShape rect;
+	sf::Font font;
+	public:
+	Play(sf::Vector2f position,sf::Vector2f size=sf::Vector2f(50,50)):Button(position,size,"PLAY"){
+	}
+	virtual void onClick(sf::RenderWindow& window,GoBoard& b){
+		window.clear(sf::Color(128 , 128 , 128));
+		b.display(window);
+		setOnScreen(false);
+	}
+
+
+
+};
+class Pass : public Button
+{
+	private :
+	bool onScreen;
+	sf::Text texte;
+	sf::RectangleShape rect;
+	sf::Font font;
+	public:
+	Pass(sf::Vector2f position,sf::Vector2f size=sf::Vector2f(200,50)):Button(position,size,"Passer son tour"){}
+	virtual void onClick(sf::RenderWindow& window,GoBoard& b,int* tour){
+		b.display(window);
+        *tour = 1;
+        std::cout<<*tour<<std::endl;
+	}
+
+
+};
 
 int** createRandomBoard() {
     int** board = new int*[BOARD_SIZE];
@@ -85,16 +161,22 @@ int** createRandomBoard() {
 }
 
 int main() {
+    int tour_passer = 0;
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     sf::RenderWindow window(sf::VideoMode(800, 600), "Go Game", sf::Style::Resize | sf::Style::Close);
-
+    
     int** board = createRandomBoard();
-
+    Play boutonjouer(sf::Vector2f(window.getSize().x/2-50,window.getSize().y/2-50));
+    Pass boutonpasser(sf::Vector2f(window.getSize().x/1.25,window.getSize().y/1.25));
     GoBoard goBoard;
-
+    window.clear(sf::Color(128, 128, 128));
+    
     while (window.isOpen()) 
     {
         sf::Event event;
+        Play boutonjouer(sf::Vector2f(window.getSize().x/2-50,window.getSize().y/2-50));
+        Pass boutonpasser(sf::Vector2f(window.getSize().x/1.25,window.getSize().y/1.25));
+        if (boutonjouer.getOnScreen()) boutonjouer.draw(window);
         while (window.pollEvent(event)) 
         {
             if (event.type == sf::Event::Closed) 
@@ -106,7 +188,13 @@ int main() {
                 float a = 0.85f * window.getSize().y / BOARD_SIZE;
                 float offset = window.getSize().x / 2 - 0.85f * window.getSize().y / 2;
                 float clickTolerance = a * 0.25;  // Tolerance of 25% of the cell size
-
+                if (boutonjouer.isMouseOver(sf::Vector2f(mousePos)))  {
+                    boutonjouer.onClick(window,goBoard);
+                }
+                if (boutonpasser.isMouseOver(sf::Vector2f(mousePos)))  {
+                    boutonpasser.onClick(window,goBoard,&tour_passer);
+                }
+                else    {
                 for (int i = 0; i < BOARD_SIZE; ++i) {
                     for (int j = 0; j < BOARD_SIZE; ++j) {
                         float stoneCenterX = offset + i * a;
@@ -120,14 +208,20 @@ int main() {
                     }
                 }
             }
+            }
 
             else if (event.type == sf::Event::Resized) {
+                window.clear(sf::Color(128, 128, 128));
                 window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
                 goBoard.draw(sf::Vector2u(event.size.width, event.size.height));
                 goBoard.updateStones(sf::Vector2u(event.size.width, event.size.height), board);
             }
-            window.clear(sf::Color(128, 128, 128));
-            goBoard.display(window);
+            
+            if (!boutonjouer.getOnScreen()) {
+                window.clear(sf::Color(128, 128, 128));
+                goBoard.display(window);
+                boutonpasser.draw(window);
+            }
             window.display();
         }
     }
