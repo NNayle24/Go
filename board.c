@@ -1,7 +1,7 @@
 #include "board.h"
 
 
-
+//GCC memset implementation 
 void* memset(void *dest, int val, size_t len) {
     unsigned char *ptr = dest;
     while (len-- > 0)
@@ -9,10 +9,12 @@ void* memset(void *dest, int val, size_t len) {
     return dest;
 }
 
+//Verifie si la position est ni hors du tableau ni occupé
 int IsValidPosition(Item itm, int x, int y) {
     return (x >= 0 && y >= 0 && y < BOARD_SIZE && x < BOARD_SIZE && (itm->board[x][y] != -1) && (itm->board[x][y] != 1));
 }
 
+//Verifie et met a jour le tableau si la pierre placée a crée des emprisonnement 
 void UpdateBoard(Item itm, int x, int y) {
     int oppositeColor = -(itm->board[x][y]);
     static int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
@@ -29,7 +31,7 @@ void UpdateBoard(Item itm, int x, int y) {
     }
     memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
 }
-
+//Verifie si il y a un emprisonnnement , est utilisé uniquement par UpdateBoard()
 int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE]) {
     int dx[] = {-1, 0, 1, 0};
     int dy[] = {0, 1, 0, -1};
@@ -47,6 +49,7 @@ int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE]) {
     return 1;
 }
 
+//retire les pierres capture , est utilisé uniquement par UpdateBoard()
 void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE]) {
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
@@ -55,6 +58,7 @@ void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE]) {
     }
 }
 
+//Condition de fin de la simulation basé sur la completude du tableau 
 int IsGameOver(Item itm) {
     int empty = 0;
     for (int i = 0; i < BOARD_SIZE; i++) {
@@ -68,7 +72,7 @@ int IsGameOver(Item itm) {
 }
 
 
-
+//Simule une partie complete retourne si l'IA a gagné
 float simulate(Item itm) {
     //printf("simu...\n");
     int x , y ;
@@ -87,7 +91,7 @@ float simulate(Item itm) {
 }
 
 
-
+//remonte la branche pour mettre a jour le nombre de visite des noeuds et les victoires
 void backpropagate(Item itm, float result) {
     //printf("back...\n");
     while (itm!=NULL)
@@ -103,8 +107,7 @@ void backpropagate(Item itm, float result) {
 
 
 
-#define EXPLORATION_PARAMETER 1.414 // Commonly used value for the exploration parameter
-
+//Implemente l'algorithme de recherche UCT 
 Item select_node(Item root) {
     //printf("select...\n");
     Item select = root;
@@ -138,7 +141,7 @@ Item select_node(Item root) {
 
 
 
-
+//Genere tout les fils possible d'un plateau
 void expand_node(Item itm) {
     //printf("expand...\n");
     pthread_mutex_lock(&itm->lock);
@@ -165,7 +168,7 @@ void expand_node(Item itm) {
     pthread_mutex_unlock(&itm->lock);
 }
 
-
+// fonction qui implemente l'algorithme MCTS de maniere concurrente
 void* thread_func(void *arg) {
     //printf("thread...\n");
     ThreadData *data = (ThreadData*)arg;
@@ -230,11 +233,10 @@ char determine_territory_owner(char **board, Point *territory, int size) {
 // 1.0 si blanc gagne 0.0 si blanc perd
 float calculate_scores(char **board) {
     //printf("start calculate\n");
-    // Allocation dynamique de la mémoire pour le plateau temporaire
     char **temp_board = malloc(BOARD_SIZE * sizeof(char *));
     for (int i = 0; i < BOARD_SIZE; i++) {
         temp_board[i] = malloc(BOARD_SIZE * sizeof(char));
-        memcpy(temp_board[i], board[i], BOARD_SIZE * sizeof(char)); // Copier le plateau
+        memcpy(temp_board[i], board[i], BOARD_SIZE * sizeof(char)); 
     }
 
     Point territory[BOARD_SIZE * BOARD_SIZE];
@@ -270,6 +272,7 @@ float calculate_scores(char **board) {
     return  ((white_score - black_score)>0)*1.0;
 }
 
+//Lance l'algorithme MCTS
 void run_mcts(Item root, int num_threads, int num_simulations) {
     //printf("start mcts\n");
     pthread_t threads[num_threads];
@@ -293,7 +296,7 @@ void run_mcts(Item root, int num_threads, int num_simulations) {
 
 
 
-
+//Retourne le meilleur fils
 Item find_best_move(Item root) {
     Item best_child = NULL;
     int max_visits = -1;
@@ -310,6 +313,7 @@ Item find_best_move(Item root) {
     return best_child;
 }
 
+//fonction de debug qui affiche l'heuristique et le nombre de visite de chaque fils 
 void print_children_heuristics(Item parent) {
     if (parent == NULL || parent->child == NULL) {
         printf("Aucun enfant à afficher.\n");
@@ -326,6 +330,7 @@ void print_children_heuristics(Item parent) {
     }
 }
 
+//Realise tout la reflexion de l'IA et renvoi le meilleur coup 
 void IA_computing(char** tab, int* x, int* y )
 {
     Item root = createItem();
