@@ -1,16 +1,19 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include "struct.h"
+
 #include <pthread.h>
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <math.h>
 
-//Permet de passer tous les args sous un même void* pour les threads
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "struct.h"
 
 
 typedef struct {
@@ -18,6 +21,7 @@ typedef struct {
     int y;
 } Point;
 
+//Permet de passer tous les args sous un même void* pour les threads
 typedef struct {
     Item root;
     int num_simulations;
@@ -40,4 +44,9 @@ void run_mcts(Item root, int num_threads, int num_simulations);
 Item find_best_move(Item root);
 void print_children_heuristics(Item parent);
 void IA_computing(char** tab, int* x, int* y );
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // BOARD_H

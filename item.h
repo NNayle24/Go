@@ -11,6 +11,11 @@ typedef struct list_ *List;
 #include <stdlib.h>
 #include <assert.h>
 #include <pthread.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "const.h"
 #include "list.h"
 
@@ -36,5 +41,9 @@ void addHeuristic(Item, float);
 void addNext(Item, Item);
 void addPrev(Item, Item);
 void printBoard(Item);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // ITEM_H

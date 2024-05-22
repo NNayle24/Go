@@ -7,6 +7,10 @@ typedef struct item_ *Item;
 
 #include "item.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct list_ {
     Item first;
     Item last;
@@ -22,6 +26,10 @@ Item popLast(List);
 Item popFirst(List);
 Item popBest(List);
 short len(List);
-void prinList(List);
+void printList(List);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // LIST_H
