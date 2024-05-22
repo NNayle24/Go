@@ -7,16 +7,11 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-//for random, remove both once tests are over
-#include <cstdlib>
-#include <ctime>
-
 //Including C files
 extern "C"{
 	#include "const.h"
-	#include "struct.h"
+    #include "board.h"
 }
-
 
 class GoBoard 
 {
@@ -45,7 +40,7 @@ public:
     }
 
     // Update the stones vector based on the board state
-    void updateStones(sf::Vector2u windowSize, int** board) {
+    void updateStones(sf::Vector2u windowSize, char** board) {
         stones.clear();
         float radius = 0.85f * windowSize.y / (2 * BOARD_SIZE);
         float a = 0.85f * windowSize.y / BOARD_SIZE;
@@ -72,164 +67,148 @@ public:
         }
     }
 };
-class Button
-{
-	private:
-	bool onScreen;
-	sf::Text texte;
-	sf::RectangleShape rect;
-	sf::Font font;
-	public:
-	Button(sf::Vector2f position,sf::Vector2f size,std::string label)
-	{
-		rect.setSize(size);
-		rect.setPosition(position);
-		rect.setFillColor(sf::Color::Red);
-		font.loadFromFile("Arial.ttf");
-		texte.setFont(font);
-		texte.setString(label);
-		texte.setCharacterSize(20);
-		texte.setFillColor(sf::Color::Black);
-		texte.setPosition(sf::Vector2f(position.x,position.y));
-	}
-	virtual void onClick(){}
-	void setOnScreen(bool booleen){
-		onScreen=booleen;
-	}
-	bool getOnScreen(){
-		return onScreen;
-	}
-	void draw(sf::RenderWindow& window) {
-		setOnScreen(true);
-        window.draw(rect);
-        window.draw(texte);
-    }
-
-    bool isMouseOver(const sf::Vector2f& mousePos) const {
-        return (rect.getGlobalBounds().contains(mousePos));
-    }
 
 
+class Button {
+private:
+    sf::RectangleShape shape;
+    sf::Text text;
+    sf::Font font;
 
-};
-class Play : public Button
-{
-	private:
-	bool onScreen;
-	sf::Text texte;
-	sf::RectangleShape rect;
-	sf::Font font;
-	public:
-	Play(sf::Vector2f position,sf::Vector2f size=sf::Vector2f(50,50)):Button(position,size,"PLAY"){
-	}
-	virtual void onClick(sf::RenderWindow& window,GoBoard& b){
-		window.clear(sf::Color(128 , 128 , 128));
-		b.display(window);
-		setOnScreen(false);
-	}
+public:
+    Button(float x, float y, float width, float height, const std::string& str, sf::Color bgColor = sf::Color::White, sf::Color textColor = sf::Color::Black) {
+        shape.setPosition(x, y);
+        shape.setSize(sf::Vector2f(width, height));
+        shape.setFillColor(bgColor);
+        shape.setOutlineColor(sf::Color::Black); // Add an outline
+        shape.setOutlineThickness(2);
 
-
-
-};
-class Pass : public Button
-{
-	private :
-	bool onScreen;
-	sf::Text texte;
-	sf::RectangleShape rect;
-	sf::Font font;
-	public:
-	Pass(sf::Vector2f position,sf::Vector2f size=sf::Vector2f(200,50)):Button(position,size,"Passer son tour"){}
-	virtual void onClick(sf::RenderWindow& window,GoBoard& b,int* tour){
-		b.display(window);
-        *tour = 1;
-        std::cout<<*tour<<std::endl;
-	}
-
-
-};
-
-int** createRandomBoard() {
-    int** board = new int*[BOARD_SIZE];
-    for (int i = 0; i < BOARD_SIZE; ++i) {
-        board[i] = new int[BOARD_SIZE];
-        for (int j = 0; j < BOARD_SIZE; ++j) {
-            board[i][j] = std::rand() % 3 - 1;  // Generates -1, 0, 1 randomly
+        if (!font.loadFromFile("arial.ttf")) {
+            std::cerr << "Could not load font\n";
         }
+
+        text.setFont(font);
+        text.setString(str);
+        text.setCharacterSize(24); // Adapt ?
+        text.setFillColor(textColor);
+        
+        // Center the text on the button
+        sf::FloatRect textRect = text.getLocalBounds();
+        text.setOrigin(textRect.left + textRect.width / 2.0, textRect.top + textRect.height / 2.0);
+        text.setPosition(shape.getPosition().x + shape.getSize().x / 2.0f, shape.getPosition().y + shape.getSize().y / 2.0f - 10); // Slightly adjust to center
+        
     }
-    return board;
+
+    void display(sf::RenderWindow& window) {
+        window.draw(shape); // Draw the rectangle background
+        window.draw(text);  // Ensure text is drawn after the shape
+    }
+
+    bool isClicked(sf::Vector2f mousePos) {
+        return shape.getGlobalBounds().contains(mousePos);
+    }
+};
+void refreshDisplay(sf::RenderWindow& window, GoBoard& goBoard, Button& passButton, Button& resignButton) {
+    window.clear(sf::Color(128, 128, 128));            
+    goBoard.display(window);
+    passButton.display(window);
+    resignButton.display(window);
+    window.display();
 }
 
 int main() {
-    int tour_passer = 0;
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
     sf::RenderWindow window(sf::VideoMode(800, 600), "Go Game", sf::Style::Resize | sf::Style::Close);
-    
-    int** board = createRandomBoard();
-    Play boutonjouer(sf::Vector2f(window.getSize().x/2-50,window.getSize().y/2-50));
-    Pass boutonpasser(sf::Vector2f(window.getSize().x/1.25,window.getSize().y/1.25));
+    Item itm = createItem();
+    char **board = itm->board; //pointer to the Item board, should be fine modifying its value to modify Item's values
+
+    int X =0 ,Y=0; //AI's chosen coordinates
+
     GoBoard goBoard;
-    window.clear(sf::Color(128, 128, 128));
+    Button passButton(0, 0, 100, 50, "Pass", sf::Color(200, 200, 200));
+    Button resignButton(0, 0, 100, 50, "Resign", sf::Color(200, 200, 200));
     
     while (window.isOpen()) 
     {
+
         sf::Event event;
-        Play boutonjouer(sf::Vector2f(window.getSize().x/2-50,window.getSize().y/2-50));
-        Pass boutonpasser(sf::Vector2f(window.getSize().x/1.25,window.getSize().y/1.25));
-        if (boutonjouer.getOnScreen()) boutonjouer.draw(window);
         while (window.pollEvent(event)) 
         {
             if (event.type == sf::Event::Closed) 
             {
                 window.close();
             } 
-            else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+            else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) 
+            {
+                sf::Vector2f mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
                 float a = 0.85f * window.getSize().y / BOARD_SIZE;
                 float offset = window.getSize().x / 2 - 0.85f * window.getSize().y / 2;
                 float clickTolerance = a * 0.25;  // Tolerance of 25% of the cell size
-                if (boutonjouer.isMouseOver(sf::Vector2f(mousePos)))  {
-                    boutonjouer.onClick(window,goBoard);
+
+
+                if (passButton.isClicked(mousePos)) {
+                    std::cout << "Pass button clicked" << std::endl;
+                    if(calculate_scores(board)>0.5){
+                        std::cout << "White wins" << std::endl;
+                    }
+                    else{
+                        std::cout << "Black wins" << std::endl;
+                        window.close();
+                    }
                 }
-                if (boutonpasser.isMouseOver(sf::Vector2f(mousePos)))  {
-                    boutonpasser.onClick(window,goBoard,&tour_passer);
-                }
-                else    {
-                for (int i = 0; i < BOARD_SIZE; ++i) {
-                    for (int j = 0; j < BOARD_SIZE; ++j) {
-                        float stoneCenterX = offset + i * a;
-                        float stoneCenterY = 0.1f * window.getSize().y + j * a;
-                        if (std::abs(mousePos.x - stoneCenterX) < clickTolerance && 
-                            std::abs(mousePos.y - stoneCenterY) < clickTolerance && 
-                            board[i][j] == 0) {
-                            board[i][j] = 1;  // Player places a stone
-                            goBoard.updateStones(window.getSize(), board);
+                else if (resignButton.isClicked(mousePos)) {
+                    std::cout << "Resign button clicked" << std::endl;
+                } 
+                else 
+                {
+                    for (int i = 0; i < BOARD_SIZE; ++i) 
+                    {
+                        for (int j = 0; j < BOARD_SIZE; ++j) 
+                        {
+                            float stoneCenterX = offset + i * a;
+                            float stoneCenterY = 0.1f * window.getSize().y + j * a;
+                            if (std::abs(mousePos.x - stoneCenterX) < clickTolerance && 
+                                std::abs(mousePos.y - stoneCenterY) < clickTolerance && 
+                                board[i][j] == 0) 
+                                {
+                                if(IsValidPosition(itm, i, j))
+                                {
+                                    board[i][j] = -1;  // Player places a stone, modify the board
+                                    UpdateBoard(itm, i, j);        
+                                    refreshDisplay(window, goBoard, passButton, resignButton);
+                                    IA_computing(board, &X, &Y); //AI returns its move as pointers
+                                    board[X][Y] = 1; //AI places a stone, modify the board
+                                    UpdateBoard(itm, X, Y);
+                                    refreshDisplay(window, goBoard, passButton, resignButton);
+                                }
+                            }
                         }
                     }
                 }
             }
-            }
 
             else if (event.type == sf::Event::Resized) {
-                window.clear(sf::Color(128, 128, 128));
                 window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
                 goBoard.draw(sf::Vector2u(event.size.width, event.size.height));
                 goBoard.updateStones(sf::Vector2u(event.size.width, event.size.height), board);
+                if (event.type == sf::Event::Resized || event.type == sf::Event::GainedFocus) {
+                // Update button positions based on window size
+                float buttonWidth = 100;
+                float buttonHeight = 40;
+                float boardBottom = 0.1f * window.getSize().y + BOARD_SIZE * (0.85f * window.getSize().y / BOARD_SIZE);
+                float middle = window.getSize().x / 2.0f;
+
+                passButton = Button(middle - buttonWidth - 10, boardBottom + 20 - buttonHeight, buttonWidth, buttonHeight, "Pass", sf::Color(200, 200, 200));
+                resignButton = Button(middle + 10, boardBottom + 20 - buttonHeight, buttonWidth, buttonHeight, "Resign", sf::Color(200, 200, 200));
             }
-            
-            if (!boutonjouer.getOnScreen()) {
-                window.clear(sf::Color(128, 128, 128));
-                goBoard.display(window);
-                boutonpasser.draw(window);
             }
-            window.display();
+            refreshDisplay(window, goBoard, passButton, resignButton);
         }
     }
 
-    for (int i = 0; i < BOARD_SIZE; ++i) {
-        delete[] board[i];
-    }
-    delete[] board;
+    // for (int i = 0; i < BOARD_SIZE; ++i) {
+    //     delete[] board[i];
+    // }
+    // delete[] board;
 
     return 0;
 }
