@@ -13,7 +13,9 @@ Item createItem(){
     node->prev = NULL;
     node->f = -1.0;
     node->depth = 0;
-    node->turn = 0;
+    node->turn = 1;
+    pthread_mutex_init(&node->lock, NULL);
+    node->visits = 0; 
     node->child = createList() ;
 
     return node ;
@@ -25,11 +27,12 @@ void freeItem(Item node){
     if(node){
         if(node->board){
             for(int i=0; i<BOARD_SIZE; i++){
+
                 free(node->board[i]) ;
             }
             free(node->board) ; 
-        freeList(node->child);
         }
+        freeList(node->child);
         free(node) ;
 
     }
@@ -52,7 +55,7 @@ void addChildItem(Item father, Item baby){
         // Définie les paramètre de l'enfant
         baby->depth = father->depth+1 ;
         baby->parent = father ;
-        baby->turn = (father->turn+1)%2 ;
+        baby->turn = -baby->turn ;
     }
 
 }

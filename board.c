@@ -1,207 +1,184 @@
 #include "board.h"
 
 
-//GCC memset
-void* memset (void *dest, int val, size_t len)
-{
-  unsigned char *ptr = dest;
-  while (len-- > 0)
-    *ptr++ = val;
-  return dest;
+
+void* memset(void *dest, int val, size_t len) {
+    unsigned char *ptr = dest;
+    while (len-- > 0)
+        *ptr++ = val;
+    return dest;
 }
 
 int IsValidPosition(Item itm, int x, int y) {
-    return ( x>=0 && y>=0 && y < BOARD_SIZE && x<BOARD_SIZE && (itm->board[x][y] != -1) && (itm->board[x][y] != 1));
+    return (x >= 0 && y >= 0 && y < BOARD_SIZE && x < BOARD_SIZE && (itm->board[x][y] != -1) && (itm->board[x][y] != 1));
 }
 
-//Actualise l'état du board en prenant en compte la nouvelle pierre en x,y
-void UpdateBoard(Item itm, int x , int y) {
-    // Détermination de la couleur opposée
+void UpdateBoard(Item itm, int x, int y) {
     int oppositeColor = -(itm->board[x][y]);
-
-
-    //Tableau pour se souvenir des cases visitées
     static int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
-
-    //Check si la pierre posée est suicidée
-    //if(CheckCapture(itm, x, y, visited)) RemoveStones(itm, visited);
-
-    //Parcourir les voisins pour vérifier les captures
     int neighbors[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
     for (int i = 0; i < 4; i++) {
         int nx = x + neighbors[i][0];
         int ny = y + neighbors[i][1];
         if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
-
-            //Explorer la possibilité de prise seulement sur les pierres ennemies
             if (itm->board[nx][ny] == oppositeColor) {
-                memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);//Reset du masque des visités
-
-                //Verifier si groupe capturable, si oui retirer les pierres
+                memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
                 if (CheckCapture(itm, nx, ny, visited)) RemoveStones(itm, visited);
-            
             }
         }
     }
-
-    //Reset du masque des visités
     memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
 }
 
-
-/**/
-//Fonction booléenne vérifiant la capture d'une zone en comptant ses libertés, 1 si capture et 0 sinon
-int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE])
-{
-    //Les offset pour trouver les positions des voisins
-    int dx[] = {-1,0,1,0};
-    int dy[] = {0,1,0,-1};
-    
-    //On mouille la pierre
+int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE]) {
+    int dx[] = {-1, 0, 1, 0};
+    int dy[] = {0, 1, 0, -1};
     visited[x][y] = 1;
-
-
-    for (int  i = 0; i < 4; i++)
-    {
-        //Les positions des voisins
+    for (int i = 0; i < 4; i++) {
         int nx = x + dx[i];
         int ny = y + dy[i];
-
-        if(nx>=0 && nx<BOARD_SIZE && ny>=0 && ny<BOARD_SIZE)
-        {
-            //Si liberté trouvée, pas de capture
-            if (itm->board[nx][ny]==0) return 0;
-        
-            //On vérifie les libertés des voisins de même couleur, donc même groupe
-            if(visited[nx][ny]==0 && itm->board[nx][ny]==itm->board[x][y])
-            {
-                //Si un voisin a une liberté, pas de capture
-                if(CheckCapture(itm,nx,ny,visited)==0) return 0;
+        if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+            if (itm->board[nx][ny] == 0) return 0;
+            if (visited[nx][ny] == 0 && itm->board[nx][ny] == itm->board[x][y]) {
+                if (CheckCapture(itm, nx, ny, visited) == 0) return 0;
             }
         }
     }
-    return 1; //Aucune liberté trouvée, capture
+    return 1;
 }
 
-//Retire les pierres capturées du board
-void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
-{
-    for (int i = 0; i < BOARD_SIZE; i++)
-    {
-        for (int j = 0; j < BOARD_SIZE; j++)
-        {
-            //Les pierres à retirer sont visitées dans CheckCapture
-            if(visited[i][j]==1) itm->board[i][j]=0;
+void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE]) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (visited[i][j] == 1) itm->board[i][j] = 0;
         }
     }
 }
 
-
-
-void GetChildBoard(Item itm, int x, int y) {
-    Item tmp = createItem();
-    addParentItem(tmp, itm);
-    addChildItem(itm, tmp); // add last
-    addBoard(tmp, itm->board);
-    if (tmp->turn) {
-        tmp->board[x][y] = -1;
-    } else {
-        tmp->board[x][y] = 1;
-    }
-    UpdateBoard(itm, x, y);
-}
-
-//Vérifie si le board est suffisamment rempli pour le considérer final
 int IsGameOver(Item itm) {
-    int vides = 0;
-    int i, j;
-    for (i = 0; i < BOARD_SIZE; i++) {
-        for (j = 0; j < BOARD_SIZE; j++) {
+    int empty = 0;
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
             if (itm->board[i][j] == 0) {
-                vides++;
+                empty++;
             }
         }
     }
-    //Valeur arbitraire, actuellement la valeur de l'avantage du second joueur
-    return (vides>KOMI);
+    return (empty < (KOMI));
 }
 
-//Lance des simulations de parties dans des threads
-void runGame(Item itm, HT hashTable, Zobrist zkey) {
-    pthread_t threads[MAX_THREADS];
-    int i, num_threads = 0;
 
-    //Compilation des arguments pour les threads
-    ComputeGameArgs args;
-    args.itm = itm;
-    args.hashTable = hashTable;
-    args.zKey = zkey;
 
-    while (num_threads < MAX_THREADS) {
-        pthread_create(&threads[num_threads], NULL, ComputeGame, &args);
-        num_threads++;
-    }
-    for (i = 0; i < num_threads; i++) {
-        pthread_join(threads[i], NULL);
-    }
-}
-
-//Joue une partie jusqu'à sa complétion
-void* ComputeGame(void* args) {
-    //Décompilations des arguments
-    ComputeGameArgs* gameArgs = (ComputeGameArgs*)args;
-    Item itm = gameArgs->itm;
-    HT HashTable = gameArgs->hashTable;
-    Zobrist zkey = gameArgs->zKey;
-
-    if (IsGameOver(itm)) {
-        addHeuristic(itm, calculate_scores(itm->board)); //@TODO replace float by getWinner function
-    } 
-    else {
-        int cond = 1;
-        int x, y;
-        while (cond) {
+float simulate(Item itm) {
+    //printf("simu...\n");
+    int x , y ;
+    while(!IsGameOver(itm))
+    {
+        do
+        {
             x = rand() % BOARD_SIZE;
             y = rand() % BOARD_SIZE;
-            if (IsValidPosition(itm, x, y)) {
-                cond = 0;
-                GetChildBoard(itm, x, y);
-                Item tmp = searchItem(HashTable, itm->child->last, zkey);
-                if (tmp != NULL) {
-                    freeItem(popLast(itm->child));
-                    addParentItem(tmp, itm);
-                    addChildItem(itm, tmp); // add last
-                    addToTable(HashTable, itm->child->last, zkey);
-                }
-                
-                ComputeGameArgs nextComputeGameArgs;
-                nextComputeGameArgs.itm = tmp;
-                nextComputeGameArgs.hashTable = HashTable;
-                nextComputeGameArgs.zKey = zkey;
+        } while(!IsValidPosition(itm,x,y));
+        itm->board[x][y]=itm->turn;
+        UpdateBoard(itm,x,y);
+        itm->turn=-itm->turn;
+    }
+    return calculate_scores(itm->board);
+}
 
-                ComputeGame(&nextComputeGameArgs);
+
+
+void backpropagate(Item itm, float result) {
+    //printf("back...\n");
+    while (itm!=NULL)
+    {
+        pthread_mutex_lock(&itm->lock); 
+        itm->visits++;
+        itm->f += result ;
+        pthread_mutex_unlock(&itm->lock);
+        itm = itm->parent;
+    }
+}
+
+
+
+
+#define EXPLORATION_PARAMETER 1.414 // Commonly used value for the exploration parameter
+
+Item select_node(Item root) {
+    //printf("select...\n");
+    Item select = root;
+    
+    while (select->child != NULL && select->child->len > 0) {
+        Item best_child = NULL;
+        double best_uct_value = -INFINITY;
+
+        Item current = select->child->first;
+        while (current != NULL) {
+            double exploitation_value = (current->visits > 0) ? (current->f / current->visits) : 0.0;
+            double exploration_value = (current->visits > 0) ? sqrt(log((double)select->visits) / current->visits) : INFINITY;
+            double uct_value = exploitation_value + EXPLORATION_PARAMETER * exploration_value;
+
+            if (uct_value > best_uct_value) {
+                best_uct_value = uct_value;
+                best_child = current;
+            }
+            current = current->next;
+        }
+        
+        if (best_child == NULL) {
+            break;
+        }
+        select = best_child;
+    }
+    
+    return select;
+}
+
+
+
+
+
+void expand_node(Item itm) {
+    //printf("expand...\n");
+    pthread_mutex_lock(&itm->lock);
+    if (itm->child->len == 0)
+    {
+        for (int i = 0; i < BOARD_SIZE; i++) 
+        {
+            for (int j = 0; j < BOARD_SIZE; j++) 
+            {
+                if(IsValidPosition(itm,i,j))
+                {
+                    Item tmp = createItem();
+                    addBoard(tmp,itm->board);
+                    tmp->board[i][j]=itm->turn;
+                    tmp->x=i;
+                    tmp->y=j;
+                    UpdateBoard(tmp,i,j);
+                    addParentItem(itm,tmp);
+                    addChildItem(itm,tmp);
+                }
             }
         }
     }
+    pthread_mutex_unlock(&itm->lock);
+}
+
+
+void* thread_func(void *arg) {
+    //printf("thread...\n");
+    ThreadData *data = (ThreadData*)arg;
+    for(int i = 0; i < data->num_simulations; i++)
+    {
+        Item itm = select_node(data->root);
+        expand_node(itm);
+        float res = simulate(itm);
+        backpropagate(itm,res);
+    }
     return NULL;
-}
 
-float GetHeuristic(Item itm) {
-    if (itm->f != -1.0) {
-        return itm->f;
-    }
-    float score = 0;
-    int i;
-    Item current = itm->child->first;
-    for (i = 0; i < itm->child->len; i++) {
-        score += GetHeuristic(current);
-        current = current->next;
-    }
-    score = score / itm->child->len;
-    addHeuristic(itm, score);
-    return score;
 }
-
 
 // Fonction de remplissage par diffusion pour marquer un territoire
 void flood_fill(char **board, int x, int y, char color, Point *territory, int *size) {
@@ -252,6 +229,7 @@ char determine_territory_owner(char **board, Point *territory, int size) {
 // Fonction pour calculer les scores des joueurs
 // 1.0 si blanc gagne 0.0 si blanc perd
 float calculate_scores(char **board) {
+    //printf("start calculate\n");
     // Allocation dynamique de la mémoire pour le plateau temporaire
     char **temp_board = malloc(BOARD_SIZE * sizeof(char *));
     for (int i = 0; i < BOARD_SIZE; i++) {
@@ -292,16 +270,127 @@ float calculate_scores(char **board) {
     return  ((white_score - black_score)>0)*1.0;
 }
 
-int move(Item itm, HT hashTable, Zobrist zkey) {
-    if (IsGameOver(itm)) {
-        return 1;
+void run_mcts(Item root, int num_threads, int num_simulations) {
+    //printf("start mcts\n");
+    pthread_t threads[num_threads];
+    ThreadData *thread_data[num_threads];
+    for (int i = 0; i < num_threads; i++) {
+        thread_data[i] = (ThreadData*)malloc(sizeof(ThreadData));
+        if (thread_data[i] == NULL) {
+            // Handle allocation failure
+            perror("Failed to allocate memory for ThreadData");
+            exit(EXIT_FAILURE);
+        }
+        thread_data[i]->root = root;
+        thread_data[i]->num_simulations = num_simulations / num_threads;
+        pthread_create(&threads[i], NULL, thread_func, thread_data[i]);
     }
-    runGame(itm, hashTable, zkey);
-    GetHeuristic(itm);
-    Item max = popBest(itm->child);
-    eraseList(itm->child);
-    *itm = *max ;
-    freeItem(itm -> parent);
-    itm->parent = NULL ; 
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+        free(thread_data[i]); // Free allocated memory
+    }
+}
+
+
+
+
+Item find_best_move(Item root) {
+    Item best_child = NULL;
+    int max_visits = -1;
+    
+    Item child = root->child->first;
+    while (child != NULL) {
+        if (child->visits > max_visits) {
+            best_child = child;
+            max_visits = child->visits;
+        }
+        child = child->next;
+    }
+    
+    return best_child;
+}
+
+void print_children_heuristics(Item parent) {
+    if (parent == NULL || parent->child == NULL) {
+        printf("Aucun enfant à afficher.\n");
+        return;
+    }
+    int i = 0 ;
+    Item child = parent->child->first;
+    printf("Heuristiques des enfants du nœud actuel :\n");
+    while (child != NULL) {
+        float heuristic = (child->visits > 0) ? (child->f / child->visits) : 0.0;
+        printf("Child at %d - Heuristic: %f, Visits: %d\n", 
+                 i++,heuristic, child->visits);
+        child = child->next;
+    }
+}
+
+void IA_computing(char** tab, int* x, int* y )
+{
+    Item root = createItem();
+    addBoard(root,tab);
+    int num_threads = 1;
+    int num_simulations = 100000;
+    run_mcts(root, num_threads, num_simulations);
+    //print_children_heuristics(root);
+    Item best_move = find_best_move(root);
+    *x = best_move->x ;
+    *y = best_move->y ;
+    freeItem(root);
+}
+
+
+
+int main (void)
+{
+    return 1 ;
+}
+/*
+int main() {
+    srand(time(NULL));
+
+    // Initialize the board
+    Item board =createItem();
+
+    int x, y;
+    while (1) {
+        printBoard(board);
+
+        printf("Your move (enter x y): ");
+        scanf("%d %d", &x, &y);
+
+        if ((x - y)==0)
+        {
+            if (calculate_scores(board->board))
+            {
+                printf("Game over! L'ia a gagné\n");
+                break;
+            }
+        }
+
+        board->board[x][y] = 1;
+        UpdateBoard(board, x, y);
+
+
+        printBoard(board);
+
+        IA_computing(board->board, &x, &y);
+        printf("AI move: %d %d\n", x, y);
+
+        board->board[x][y] = -1;
+        UpdateBoard(board, x, y);
+
+        if (IsGameOver(board)) {
+            printf("Game over!\n");
+            break;
+        }
+    }
+
+    printBoard(board);
+
+    freeItem(board);
+
     return 0;
 }
+*/

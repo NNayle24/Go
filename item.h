@@ -10,6 +10,7 @@ typedef struct list_ *List;
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <pthread.h>
 #include "const.h"
 #include "list.h"
 
@@ -21,6 +22,9 @@ typedef struct item_ {
     int depth;
     char **board;
     int turn;
+    pthread_mutex_t lock;
+    int visits;
+    int x , y ;
 } *Item;
 
 Item createItem();
