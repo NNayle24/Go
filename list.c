@@ -4,7 +4,7 @@
 
 // Créé une liste vide
 List createList(){
-    List tmp = malloc(sizeof(struct list_)) ;
+    List tmp = (List)malloc(sizeof(struct list_)) ;
     tmp->first = NULL ;
     tmp->last = NULL ;
     tmp->len = 0 ;
