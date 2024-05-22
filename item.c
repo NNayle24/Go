@@ -2,12 +2,31 @@
 // #include "list.c"
 
 // Créé un item, alloue le tableau et la liste enfant
-Item createItem(){
-    Item node = malloc(sizeof(struct item_)) ;
-    node->board = malloc(BOARD_SIZE*sizeof(char *)) ;
-    for(int i=0; i<BOARD_SIZE; i++){
-        node->board[i] = calloc(BOARD_SIZE, sizeof(char)) ;
+Item createItem() {
+    Item node = (Item)malloc(sizeof(struct item_)); 
+    if (!node) {fprintf(stderr, "Memory allocation failed for node\n"); return NULL;}
+
+    node->board = (char **)malloc(BOARD_SIZE * sizeof(char *));
+    if (!node->board) {
+        fprintf(stderr, "Memory allocation failed for node's board\n");
+        free(node); // Free node before returning NULL.
+        return NULL;
     }
+
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        node->board[i] = (char *)calloc(BOARD_SIZE, sizeof(char));
+        if (!node->board[i]) {
+            fprintf(stderr, "Memory allocation failed for node's board[%d]\n", i);
+            // Free all
+            for (int j = 0; j < i; j++) {
+                free(node->board[j]); // Free rows
+            }
+            free(node->board); // Free array
+            free(node); // Free itself
+            return NULL;
+        }
+    }
+
     node->parent = NULL;
     node->next = NULL;
     node->prev = NULL;
@@ -31,6 +50,7 @@ void freeItem(Item node){
                 free(node->board[i]) ;
             }
             free(node->board) ; 
+        freeList(node->child);
         }
         freeList(node->child);
         free(node) ;
