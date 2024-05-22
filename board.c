@@ -22,29 +22,51 @@ void UpdateBoard(Item itm, int x, int y) {
     }
     memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
 }
-//Verifie si il y a un emprisonnnement , est utilisé uniquement par UpdateBoard()
-int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE]) {
-    int dx[] = {-1, 0, 1, 0};
-    int dy[] = {0, 1, 0, -1};
-    visited[x][y] = 1;
+
+
+//Actualise l'état du board en prenant en compte la nouvelle pierre en x,y
+void UpdateBoard(Item itm, int x , int y) {
+    // Détermination de la couleur opposée
+    int oppositeColor = -(itm->board[x][y]);
+
+
+    //Tableau pour se souvenir des cases visitées
+    static int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
+
+    //Check si la pierre posée est suicidée
+    if(CheckCapture(itm, x, y, visited)) RemoveStones(itm, visited);
+
+    //Parcourir les voisins pour vérifier les captures
+    int neighbors[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
     for (int i = 0; i < 4; i++) {
-        int nx = x + dx[i];
-        int ny = y + dy[i];
+        int nx = x + neighbors[i][0];
+        int ny = y + neighbors[i][1];
         if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
-            if (itm->board[nx][ny] == 0) return 0;
-            if (visited[nx][ny] == 0 && itm->board[nx][ny] == itm->board[x][y]) {
-                if (CheckCapture(itm, nx, ny, visited) == 0) return 0;
+
+            //Explorer la possibilité de prise seulement sur les pierres ennemies
+            if (itm->board[nx][ny] == oppositeColor) {
+                memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);//Reset du masque des visités
+
+                //Verifier si groupe capturable, si oui retirer les pierres
+                if (CheckCapture(itm, nx, ny, visited)) RemoveStones(itm, visited);
+            
             }
         }
     }
-    return 1;
+
+    //Reset du masque des visités
+    memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
 }
 
-//retire les pierres capture , est utilisé uniquement par UpdateBoard()
-void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE]) {
-    for (int i = 0; i < BOARD_SIZE; i++) {
-        for (int j = 0; j < BOARD_SIZE; j++) {
-            if (visited[i][j] == 1) itm->board[i][j] = 0;
+//Retire les pierres capturées du board
+void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
+{
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            //Les pierres à retirer sont visitées dans CheckCapture
+            if(visited[i][j]==1) itm->board[i][j]=0;
         }
     }
 }
@@ -59,6 +81,7 @@ int IsGameOver(Item itm) {
             }
         }
     }
+    //Valeur arbitraire, actuellement la valeur de l'avantage du second joueur
     return (empty < (KOMI));
 }
 
