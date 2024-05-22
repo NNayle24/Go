@@ -5,7 +5,7 @@ TARGET = my_program
 CC = gcc
 
 # Options de compilation
-CFLAGS = -Wall -Wextra -I.
+CFLAGS = -Wall -Wextra -I. -pthread  -lm
 
 # Liste des fichiers source
 SRCS = board.c item.c list.c table.c test_board.c board2.c
@@ -18,7 +18,7 @@ all: $(TARGET)
 
 # Règle pour créer l'exécutable
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -pthread  -lm -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^
 
 # Règle pour compiler les fichiers source en objets
 %.o: %.c
