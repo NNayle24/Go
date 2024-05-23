@@ -337,7 +337,7 @@ void print_children_heuristics(Item parent) {
     }
     int i = 0 ;
     Item child = parent->child->first;
-    printf("Heuristiques des enfants du nœud actuel :\n");
+    printf("Computing result:\n");
     while (child != NULL) {
         float heuristic = (child->visits > 0) ? (child->f / child->visits) : 0.0;
         printf("Child at %d - Heuristic: %f, Visits: %d\n", 
@@ -351,10 +351,10 @@ void IA_computing(char** tab, int* x, int* y )
 {
     Item root = createItem();
     addBoard(root,tab);
-    int num_threads = 1;
-    int num_simulations = 10000;
+    int num_threads = NB_THREAD_IA;
+    int num_simulations = PARTIE_SIMU_IA;
     run_mcts(root, num_threads, num_simulations);
-    //print_children_heuristics(root);
+    print_children_heuristics(root);
     Item best_move = find_best_move(root);
     *x = best_move->x ;
     *y = best_move->y ;
