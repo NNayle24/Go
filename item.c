@@ -40,24 +40,57 @@ Item createItem() {
     return node ;
 }
 
-
-// Free l'item
-void freeItem(Item node){
-    if(node){
-        if(node->board){
-            for(int i=0; i<BOARD_SIZE; i++){
-
-                free(node->board[i]) ;
-            }
-            free(node->board) ; 
-        freeList(node->child);
-        }
-        freeList(node->child);
-        free(node) ;
-
+void freeItem(Item item) {
+    if (item == NULL) return;
+    //printf("parent:%ld child:%ld board:%ld lock:%ld \n",item->parent,item->child,item->board,item->lock);
+    // Libérer le tableau de board
+    int i ;
+    for (i=0;i<BOARD_SIZE;i++)
+    {
+        free(item->board[i]);
     }
+    free(item->board);
+
+
+    // Libérer l'Item lui-même
+    free(item);
 
 }
+
+// Function to recursively free an Item and all its children
+void freeItemTree(Item item) {
+    //printf("nombre de fils : %d\n",item->child->len);
+    if(item->child->len ==0)
+    {
+        freeList(item->child);
+        freeItem(item);
+    }
+    else
+    {
+        // Lock the item to ensure thread safety
+        pthread_mutex_lock(&(item->lock));
+
+        // Recursively free all children
+        List children = item->child;
+        children->len --;
+        if (children->len != 0) {
+            Item currentChild = children->first;
+            while (currentChild != NULL) {
+                Item nextChild = currentChild->next;
+                //printf("%d ",i++);
+                freeItemTree(currentChild);
+                currentChild = nextChild;
+                children->len --;
+            }
+        }
+
+        // Unlock the item before destroying the mutex
+        pthread_mutex_unlock(&(item->lock));
+        pthread_mutex_destroy(&(item->lock));
+        freeItem(item);
+    }
+}
+
 
 
 // Ajoute un enfant à l'Item parent

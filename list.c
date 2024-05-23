@@ -11,28 +11,18 @@ List createList(){
     return tmp ;
 }
 
-
-
-// Free la structure et tout les éléments
-void freeList(List liste){
-    eraseList(liste) ;
-    free(liste) ;
-} 
-
-// Free seulement les éléments
-void eraseList(List liste){
-    Item tmp = liste->first ;
-    if(liste){
-        while(liste->len > 0){
-            tmp = liste->first ;
-            liste->first = tmp->next ;
-            freeItem(tmp) ;
-            liste->len-- ;
-        }
-        liste->first = NULL ;
-        liste->last = NULL ;
+void freeList(List list) {
+    if (list == NULL) return;
+    Item current = list->first;
+    Item next;
+    while (current != NULL) {
+        next = current->next;
+        freeItem(current);  
+        current = next;
     }
+    free(list);
 }
+
 
 // Ajoute un élément à la fin de la liste
 void addLast(List liste, Item node){

@@ -172,6 +172,7 @@ int main() {
                                 {
                                 if(IsValidPosition(itm, i, j))
                                 {
+                                    std::cout<<"Computing..."<<std::endl;
                                     board[i][j] = -1;  // Player places a stone, modify the board
                                     UpdateBoard(itm, i, j);        
                                     refreshDisplay(window, goBoard, passButton, resignButton);
@@ -179,12 +180,14 @@ int main() {
                                     board[X][Y] = 1; //AI places a stone, modify the board
                                     UpdateBoard(itm, X, Y);
                                     refreshDisplay(window, goBoard, passButton, resignButton);
+                                    printBoard(itm);
                                 }
                             }
                         }
                     }
                 }
             }
+            
 
             else if (event.type == sf::Event::Resized) {
                 window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));

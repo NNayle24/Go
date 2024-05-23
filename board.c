@@ -5,25 +5,6 @@ int IsValidPosition(Item itm, int x, int y) {
     return (x >= 0 && y >= 0 && y < BOARD_SIZE && x < BOARD_SIZE && (itm->board[x][y] != -1) && (itm->board[x][y] != 1));
 }
 
-//Verifie et met a jour le tableau si la pierre placée a crée des emprisonnement 
-void UpdateBoard(Item itm, int x, int y) {
-    int oppositeColor = -(itm->board[x][y]);
-    static int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
-    int neighbors[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-    for (int i = 0; i < 4; i++) {
-        int nx = x + neighbors[i][0];
-        int ny = y + neighbors[i][1];
-        if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
-            if (itm->board[nx][ny] == oppositeColor) {
-                memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
-                if (CheckCapture(itm, nx, ny, visited)) RemoveStones(itm, visited);
-            }
-        }
-    }
-    memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
-}
-
-
 //Actualise l'état du board en prenant en compte la nouvelle pierre en x,y
 void UpdateBoard(Item itm, int x , int y) {
     // Détermination de la couleur opposée
@@ -71,6 +52,26 @@ void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
     }
 }
 
+//Verifie si il y a un emprisonnnement , est utilisé uniquement par UpdateBoard()
+int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE]) {
+    int dx[] = {-1, 0, 1, 0};
+    int dy[] = {0, 1, 0, -1};
+
+    visited[x][y] = 1;
+    for (int i = 0; i < 4; i++) {
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+            if (itm->board[nx][ny] == 0) return 0;
+            if (visited[nx][ny] == 0 && itm->board[nx][ny] == itm->board[x][y]) {
+                if (CheckCapture(itm, nx, ny, visited) == 0) return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+
 //Condition de fin de la simulation basé sur la completude du tableau 
 int IsGameOver(Item itm) {
     int empty = 0;
@@ -81,7 +82,6 @@ int IsGameOver(Item itm) {
             }
         }
     }
-    //Valeur arbitraire, actuellement la valeur de l'avantage du second joueur
     return (empty < (KOMI));
 }
 
@@ -219,6 +219,7 @@ char determine_territory_owner(char **board, Point *territory, int size) {
     int black_adjacent = 0;
     int white_adjacent = 0;
 
+
     for (int i = 0; i < size; i++) {
         int x = territory[i].x;
         int y = territory[i].y;
@@ -351,13 +352,13 @@ void IA_computing(char** tab, int* x, int* y )
     Item root = createItem();
     addBoard(root,tab);
     int num_threads = 1;
-    int num_simulations = 100000;
+    int num_simulations = 10000;
     run_mcts(root, num_threads, num_simulations);
     //print_children_heuristics(root);
     Item best_move = find_best_move(root);
     *x = best_move->x ;
     *y = best_move->y ;
-    freeItem(root);
+    freeItemTree(root);
 }
 
 

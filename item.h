@@ -34,6 +34,7 @@ typedef struct item_ {
 
 Item createItem();
 void freeItem(Item);
+void freeItemTree(Item);
 void addParentItem(Item, Item);
 void addChildItem(Item, Item);
 void addBoard(Item, char **);
