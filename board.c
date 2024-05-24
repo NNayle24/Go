@@ -10,12 +10,9 @@ void UpdateBoard(Item itm, int x , int y) {
     // Détermination de la couleur opposée
     int oppositeColor = -(itm->board[x][y]);
 
-
     //Tableau pour se souvenir des cases visitées
     static int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
 
-    //Check si la pierre posée est suicidée
-    if(CheckCapture(itm, x, y, visited)) RemoveStones(itm, visited);
 
     //Parcourir les voisins pour vérifier les captures
     int neighbors[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
@@ -37,19 +34,11 @@ void UpdateBoard(Item itm, int x , int y) {
 
     //Reset du masque des visités
     memset(visited, 0, sizeof(visited[0][0]) * BOARD_SIZE * BOARD_SIZE);
-}
 
-//Retire les pierres capturées du board
-void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
-{
-    for (int i = 0; i < BOARD_SIZE; i++)
-    {
-        for (int j = 0; j < BOARD_SIZE; j++)
-        {
-            //Les pierres à retirer sont visitées dans CheckCapture
-            if(visited[i][j]==1) itm->board[i][j]=0;
-        }
-    }
+    //Si aucun voisin n'est capturable, check le suicide
+    //Check si la pierre posée est suicidée
+    if(CheckCapture(itm, x, y, visited)) RemoveStones(itm, visited);
+    
 }
 
 //Verifie si il y a un emprisonnnement , est utilisé uniquement par UpdateBoard()
@@ -70,6 +59,20 @@ int CheckCapture(Item itm, int x, int y, int visited[BOARD_SIZE][BOARD_SIZE]) {
     }
     return 1;
 }
+
+//Retire les pierres capturées du board
+void RemoveStones(Item itm, int visited[BOARD_SIZE][BOARD_SIZE])
+{
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            //Les pierres à retirer sont visitées dans CheckCapture
+            if(visited[i][j]==1) itm->board[i][j]=0;
+        }
+    }
+}
+
 
 
 //Condition de fin de la simulation basé sur la completude du tableau 
