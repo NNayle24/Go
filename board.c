@@ -11,7 +11,7 @@ void UpdateBoard(Item itm, int x , int y) {
     int oppositeColor = -(itm->board[x][y]);
 
     //Tableau pour se souvenir des cases visitées
-    static int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
+    int visited[BOARD_SIZE][BOARD_SIZE] = {{0}};
 
 
     //Parcourir les voisins pour vérifier les captures
